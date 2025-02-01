@@ -1,0 +1,12 @@
+[
+    {
+        "ip": "192.168.1.100",
+        "latency_ms": 0.282,
+        "name": "Raspberry Pi"
+    },
+    {
+        "ip": "192.168.1.253",
+        "latency_ms": 1.66,
+        "name": "SW_SG108E"
+    }
+]

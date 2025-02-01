@@ -778,8 +778,8 @@
 	"kind" : "cmakeFiles",
 	"paths" : 
 	{
-		"build" : "/home/user/CLionProjects/Dynamic.Supervisor-SRV/cmake-build-debug",
-		"source" : "/home/user/CLionProjects/Dynamic.Supervisor-SRV"
+		"build" : "/home/user/CLionProjects/Dynamic.Supervisor/server/cmake-build-debug",
+		"source" : "/home/user/CLionProjects/Dynamic.Supervisor/server"
 	},
 	"version" : 
 	{

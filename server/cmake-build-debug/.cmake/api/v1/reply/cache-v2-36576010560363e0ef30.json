@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/user/CLionProjects/Dynamic.Supervisor-SRV/cmake-build-debug"
+			"value" : "/home/user/CLionProjects/Dynamic.Supervisor/server/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -543,7 +543,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/user/CLionProjects/Dynamic.Supervisor-SRV/cmake-build-debug/CMakeFiles/pkgRedirects"
+			"value" : "/home/user/CLionProjects/Dynamic.Supervisor/server/cmake-build-debug/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -603,7 +603,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/user/CLionProjects/Dynamic.Supervisor-SRV"
+			"value" : "/home/user/CLionProjects/Dynamic.Supervisor/server"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -843,7 +843,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "Dynamic_Supervisor_SRV"
+			"value" : "Dynamic_Supervisor"
 		},
 		{
 			"name" : "CMAKE_RANLIB",
@@ -1142,7 +1142,7 @@
 			"value" : "FALSE"
 		},
 		{
-			"name" : "Dynamic_Supervisor_SRV_BINARY_DIR",
+			"name" : "Dynamic_Supervisor_BINARY_DIR",
 			"properties" : 
 			[
 				{
@@ -1151,10 +1151,10 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/user/CLionProjects/Dynamic.Supervisor-SRV/cmake-build-debug"
+			"value" : "/home/user/CLionProjects/Dynamic.Supervisor/server/cmake-build-debug"
 		},
 		{
-			"name" : "Dynamic_Supervisor_SRV_IS_TOP_LEVEL",
+			"name" : "Dynamic_Supervisor_IS_TOP_LEVEL",
 			"properties" : 
 			[
 				{
@@ -1166,7 +1166,7 @@
 			"value" : "ON"
 		},
 		{
-			"name" : "Dynamic_Supervisor_SRV_SOURCE_DIR",
+			"name" : "Dynamic_Supervisor_SOURCE_DIR",
 			"properties" : 
 			[
 				{
@@ -1175,7 +1175,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/user/CLionProjects/Dynamic.Supervisor-SRV"
+			"value" : "/home/user/CLionProjects/Dynamic.Supervisor/server"
 		},
 		{
 			"name" : "_CMAKE_LINKER_PUSHPOP_STATE_SUPPORTED",
