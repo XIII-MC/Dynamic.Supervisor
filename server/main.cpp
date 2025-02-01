@@ -5,6 +5,10 @@
 #include <nlohmann/json.hpp>
 #include <regex>
 #include <cstdio>
+#include <thread>
+#include <mutex>
+#include <chrono>
+#include <atomic>
 
 using json = nlohmann::json;
 
@@ -12,6 +16,10 @@ struct Host {
     std::string name;
     std::string ip;
 };
+
+std::mutex results_mutex;
+std::vector<json> results;
+std::atomic keepRunning(true);
 
 std::vector<Host> loadHosts(const std::string& filename) {
 
@@ -66,9 +74,25 @@ double pingHost(const Host& host) {
 
 }
 
-void saveResults(const std::vector<json>& results, const std::string& filename) {
+void processHost(const Host& host) {
 
-    std::ofstream file(filename);
+    double latency = pingHost(host);
+
+    std::lock_guard lock(results_mutex);
+
+    const json entry = {
+        {"name", host.name},
+        {"ip", host.ip},
+        {"latency_ms", latency >= 0 ? latency : -1}
+    };
+
+    results.push_back(entry);
+
+}
+
+void saveResults(const std::string& filename) {
+
+    std::ofstream file(filename, std::ios::trunc);
     if (!file) {
 
         std::cerr << "Error: Could not write to " << filename << std::endl;
@@ -77,44 +101,58 @@ void saveResults(const std::vector<json>& results, const std::string& filename) 
 
     }
 
-    file << json(results).dump(4); // Pretty print JSON
+    file << json(results).dump(4);
     file.close();
+
+}
+
+void runPingCycle(const std::string &inputFile, const std::string& outputFile, const int sleepIntervalSeconds) {
+
+    while (keepRunning) {
+
+        std::vector<Host> hosts = loadHosts(inputFile);
+
+        std::vector<std::thread> threads;
+
+        for (const auto& host : hosts) {
+            threads.emplace_back(processHost, host);
+        }
+
+        for (auto& t : threads) {
+            t.join();
+        }
+
+        saveResults(outputFile);
+
+        std::this_thread::sleep_for(std::chrono::seconds(sleepIntervalSeconds));
+
+        {
+            std::lock_guard lock(results_mutex);
+            results.clear();
+        }
+
+    }
 
 }
 
 int main() {
 
     const std::string inputFile = "./config/hosts.json";
-    const std::string outputFile = "./results/ping_results.json";
+    std::string outputFile = "./results/ping_results.json";
 
-    while (true) {
-        std::vector<Host> hosts = loadHosts(inputFile);
-        if (hosts.empty()) {
+    if (loadHosts(inputFile).empty()) {
 
-            std::cerr << "No hosts found in JSON file.\n";
+        std::cerr << "No hosts found in JSON file.\n";
 
-            return 1;
-
-        }
-
-        std::vector<json> results;
-
-        for (const auto& host : hosts) {
-
-            double latency = pingHost(host);
-
-            json entry = {
-                {"name", host.name},
-                {"ip", host.ip},
-                {"latency_ms", latency >= 0 ? json(latency) : json(nullptr)}  // Correct way to assign null
-            };
-
-            results.push_back(entry);
-
-            saveResults(results, outputFile);
-
-        }
+        return 1;
 
     }
+
+    int sleepIntervalSeconds = 1;
+    std::thread pingCycleThread(runPingCycle, inputFile, outputFile, sleepIntervalSeconds);
+
+    pingCycleThread.join();
+
+    return 0;
 
 }
