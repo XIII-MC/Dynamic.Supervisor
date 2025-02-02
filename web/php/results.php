@@ -1,5 +1,5 @@
 <?php
-$resultsFile = '/etc/dynamic/supervisor/results/ping_results.json';
+$resultsFile = '/etc/gteam/dynamic/supervisor/results/ping_results.json';
 
 if (file_exists($resultsFile)) {
 

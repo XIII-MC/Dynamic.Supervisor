@@ -146,8 +146,8 @@ void runPingCycle(const std::string &inputFile, const std::string& outputFile, c
 
 int main() {
 
-    const std::string inputFile = "/etc/dynamic/supervisor/config/hosts.json";
-    std::string outputFile = "/etc/dynamic/supervisor/results/ping_results.json";
+    const std::string inputFile = "/etc/gteam/dynamic/supervisor/config/hosts.json";
+    std::string outputFile = "/etc/gteam/dynamic/supervisor/results/ping_results.json";
 
     // Load hosts from the JSON file
     if (loadHosts(inputFile).empty()) {

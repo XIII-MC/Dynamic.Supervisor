@@ -18,12 +18,12 @@ echo "=-= Setting up web UI... =-="
 echo ""
 
 sudo mkdir -p /var/www/html/supervisor/
-sudo mkdir -p /etc/dynamic/supervisor/config /etc/dynamic/supervisor/results
+sudo mkdir -p /etc/gteam/dynamic/supervisor/config /etc/gteam/dynamic/supervisor/results
 
-sudo touch /etc/dynamic/supervisor/config/hosts.json
-sudo touch /etc/dynamic/supervisor/results/ping_results.json
+sudo touch /etc/gteam/dynamic/supervisor/config/hosts.json
+sudo touch /etc/gteam/dynamic/supervisor/results/ping_results.json
 
-sudo bash -c 'cat <<EOF > /etc/dynamic/supervisor/config/hosts.json
+sudo bash -c 'cat <<EOF > /etc/gteam/dynamic/supervisor/config/hosts.json
 [
     {
         "name": "Local",
@@ -32,11 +32,11 @@ sudo bash -c 'cat <<EOF > /etc/dynamic/supervisor/config/hosts.json
 ]
 EOF'
 
-sudo wget -O /etc/dynamic/supervisor/web.zip https://github.com/XIII-MC/Dynamic.Supervisor/releases/download/b0001%2FR/web.zip
+sudo wget -O /etc/gteam/dynamic/supervisor/web.zip https://github.com/XIII-MC/Dynamic.Supervisor/releases/latest/download/web.zip
 
-sudo unzip /etc/dynamic/supervisor/web.zip -d /var/www/html/supervisor/
+sudo unzip /etc/gteam/dynamic/supervisor/web.zip -d /var/www/html/supervisor/
 
-sudo rm /etc/dynamic/supervisor/web.zip
+sudo rm /etc/gteam/dynamic/supervisor/web.zip
 
 echo ""
 echo "=-= Web UI online. =-="
@@ -46,11 +46,11 @@ echo ""
 echo "=-= Setting up Supervisor Server as a service... =-="
 echo ""
 
-sudo wget -O /etc/dynamic/supervisor/Dynamic.Supervisor-SRV https://github.com/XIII-MC/Dynamic.Supervisor/releases/download/b0001%2FR/Dynamic.Supervisor-SRV
+sudo wget -O /etc/gteam/dynamic/supervisor/Dynamic.Supervisor-SRV https://github.com/XIII-MC/Dynamic.Supervisor/releases/latest/download/Dynamic.Supervisor-SRV
 
-sudo chown www-data -R /etc/dynamic/supervisor/
+sudo chown www-data -R /etc/gteam/dynamic/supervisor/
 
-sudo chmod +x /etc/dynamic/supervisor/Dynamic.Supervisor-SRV
+sudo chmod +x /etc/gteam/dynamic/supervisor/Dynamic.Supervisor-SRV
 
 sudo bash -c 'cat <<EOF > /etc/systemd/system/Dynamic.Supervisor-SRV.service
 [Unit]
@@ -58,8 +58,8 @@ Description=A network/machine supervisor.
 After=network.target
 
 [Service]
-ExecStart=/etc/dynamic/supervisor/Dynamic.Supervisor-SRV
-WorkingDirectory=/etc/dynamic/supervisor/
+ExecStart=/etc/gteam/dynamic/supervisor/Dynamic.Supervisor-SRV
+WorkingDirectory=/etc/gteam/dynamic/supervisor/
 Restart=always
 User=www-data
 Group=www-data
