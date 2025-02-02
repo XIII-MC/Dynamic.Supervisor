@@ -94,7 +94,6 @@ void saveResults(const std::string& filename) {
 
     std::lock_guard lock(results_mutex);
 
-    // Open the output file and overwrite it with the latest results
     std::ofstream file(filename, std::ios::trunc);
     if (!file) {
 
@@ -104,7 +103,6 @@ void saveResults(const std::string& filename) {
 
     }
 
-    // Write the updated results
     file << json(results).dump(4);
     file.close();
 
@@ -114,27 +112,22 @@ void runPingCycle(const std::string &inputFile, const std::string& outputFile, c
 
     while (keepRunning) {
 
-        // Load hosts to ping
         std::vector<Host> hosts = loadHosts(inputFile);
 
         std::vector<std::thread> threads;
 
         for (const auto& host : hosts) {
-            threads.emplace_back(processHost, host);  // Start a thread for each host
+            threads.emplace_back(processHost, host);
         }
 
-        // Wait before the next round
         std::this_thread::sleep_for(std::chrono::seconds(sleepIntervalSeconds));
 
-        // Wait for all threads to complete
         for (auto& t : threads) {
             t.detach();
         }
 
-        // Save results to file
         saveResults(outputFile);
 
-        // Clear previous results (to avoid keeping old data)
         {
             std::lock_guard lock(results_mutex);
             results.clear();
@@ -149,7 +142,6 @@ int main() {
     const std::string inputFile = "/etc/gteam/dynamic/supervisor/config/hosts.json";
     std::string outputFile = "/etc/gteam/dynamic/supervisor/results/ping_results.json";
 
-    // Load hosts from the JSON file
     if (loadHosts(inputFile).empty()) {
 
         std::cerr << "No hosts found in JSON file.\n";
@@ -161,7 +153,6 @@ int main() {
     int sleepIntervalSeconds = 1;
     std::thread pingCycleThread(runPingCycle, inputFile, outputFile, sleepIntervalSeconds);
 
-    // Keep running the ping cycle
     pingCycleThread.join();
 
     return 0;
