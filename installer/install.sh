@@ -1,7 +1,17 @@
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
-echo "     Dynamic.Supervisor Installer (b0001/R)"
+echo "     Dynamic.Supervisor Installer (b0002/R)"
 echo "     sudo privileges will be asked."
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
+
+ARCH=$(uname -m)
+
+if [[ "$ARCH" != "x86_64" && "$ARCH" != "aarch64" && "$ARCH" != "armv7l" ]]; then
+
+    echo "Unsupported architecture: $ARCH"
+
+    exit 1
+
+fi
 
 echo ""
 echo "=-= Installing JSON, PHP, unzip and wget... =-="
@@ -46,7 +56,21 @@ echo ""
 echo "=-= Setting up Supervisor Server as a service... =-="
 echo ""
 
-sudo wget -O /etc/gteam/dynamic/supervisor/Dynamic.Supervisor-SRV https://github.com/XIII-MC/Dynamic.Supervisor/releases/latest/download/Dynamic.Supervisor-SRV
+case "$ARCH" in
+    x86_64)
+        sudo wget -O /etc/gteam/dynamic/supervisor/Dynamic.Supervisor-SRV https://github.com/XIII-MC/Dynamic.Supervisor/releases/latest/download/Dynamic.Supervisor-SRV_x86_64
+        ;;
+    aarch64)
+        sudo wget -O /etc/gteam/dynamic/supervisor/Dynamic.Supervisor-SRV https://github.com/XIII-MC/Dynamic.Supervisor/releases/latest/download/Dynamic.Supervisor-SRV_ARM64
+        ;;
+    armv7l)
+        sudo wget -O /etc/gteam/dynamic/supervisor/Dynamic.Supervisor-SRV https://github.com/XIII-MC/Dynamic.Supervisor/releases/latest/download/Dynamic.Supervisor-SRV_ARM32
+        ;;
+    *)
+        echo "Unsupported architecture: $ARCH"
+        exit 1
+        ;;
+esac
 
 sudo chown www-data -R /etc/gteam/dynamic/supervisor/
 
