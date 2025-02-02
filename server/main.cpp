@@ -46,7 +46,7 @@ std::vector<Host> loadHosts(const std::string& filename) {
 
 double pingHost(const Host& host) {
 
-    const std::string command = "ping -c 1 " + host.ip + " 2>&1";
+    const std::string command = "ping -c 1 -W 1 " + host.ip + " 2>&1";
 
     FILE* pipe = popen(command.c_str(), "r");
     if (!pipe) {
@@ -70,8 +70,7 @@ double pingHost(const Host& host) {
         return std::stod(match[1]);
     }
 
-    return -1.0; // Failure
-
+    return -1.0; // Failure (timeout)
 }
 
 void processHost(const Host& host) {
@@ -83,7 +82,7 @@ void processHost(const Host& host) {
     const json entry = {
         {"name", host.name},
         {"ip", host.ip},
-        {"latency_ms", latency >= 0 ? latency : -1}
+        {"latency_ms", latency >= 0 ? latency : -1}  // Mark as -1 if host failed to respond
     };
 
     results.push_back(entry);
@@ -92,6 +91,9 @@ void processHost(const Host& host) {
 
 void saveResults(const std::string& filename) {
 
+    std::lock_guard lock(results_mutex);
+
+    // Open the output file and overwrite it with the latest results
     std::ofstream file(filename, std::ios::trunc);
     if (!file) {
 
@@ -101,45 +103,49 @@ void saveResults(const std::string& filename) {
 
     }
 
+    // Write the updated results
     file << json(results).dump(4);
     file.close();
-
 }
 
 void runPingCycle(const std::string &inputFile, const std::string& outputFile, const int sleepIntervalSeconds) {
 
     while (keepRunning) {
 
+        // Load hosts to ping
         std::vector<Host> hosts = loadHosts(inputFile);
 
         std::vector<std::thread> threads;
 
         for (const auto& host : hosts) {
-            threads.emplace_back(processHost, host);
+            threads.emplace_back(processHost, host);  // Start a thread for each host
         }
 
-        for (auto& t : threads) {
-            t.join();
-        }
-
-        saveResults(outputFile);
-
+        // Wait before the next round
         std::this_thread::sleep_for(std::chrono::seconds(sleepIntervalSeconds));
 
+        // Wait for all threads to complete
+        for (auto& t : threads) {
+            t.detach();
+        }
+
+        // Save results to file
+        saveResults(outputFile);
+
+        // Clear previous results (to avoid keeping old data)
         {
             std::lock_guard lock(results_mutex);
             results.clear();
         }
-
     }
-
 }
 
 int main() {
 
-    const std::string inputFile = "./config/hosts.json";
-    std::string outputFile = "./results/ping_results.json";
+    const std::string inputFile = "../../web/hosts.json";
+    std::string outputFile = "../../web/ping_results.json";
 
+    // Load hosts from the JSON file
     if (loadHosts(inputFile).empty()) {
 
         std::cerr << "No hosts found in JSON file.\n";
@@ -149,10 +155,12 @@ int main() {
     }
 
     int sleepIntervalSeconds = 1;
+
+    // Start the ping cycle in a separate thread
     std::thread pingCycleThread(runPingCycle, inputFile, outputFile, sleepIntervalSeconds);
 
+    // Keep running the ping cycle
     pingCycleThread.join();
 
     return 0;
-
 }
