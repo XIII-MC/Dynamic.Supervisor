@@ -4,13 +4,13 @@ echo "     sudo privileges will be asked."
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 
 echo ""
-echo "=-= Installing JSON and PHP... =-="
+echo "=-= Installing JSON, PHP, unzip and wget... =-="
 echo ""
 
-sudo apt install nlohmann-json3-dev php wget -y
+sudo apt install nlohmann-json3-dev php unzip wget -y
 
 echo ""
-echo "=-= JSON and PHP installed. =-="
+echo "=-= JSON, PHP, unzip and wget installed. =-="
 echo ""
 
 echo ""
@@ -50,4 +50,18 @@ echo ""
 echo "=-= Supervisor Server is now a service. =-="
 echo ""
 
+echo ""
+echo "=-= Setting up web UI... =-="
+echo ""
 
+sudo wget -O /etc/dynamic/supervisor/web.zip https://github.com/XIII-MC/Dynamic.Supervisor/releases/download/b0001%2FR/web.zip
+
+unzip /etc/dynamic/supervisor/web.zip -d /var/www/html/supervisor/
+
+echo ""
+echo "=-= Web UI online. =-="
+echo ""
+
+echo ""
+echo "=-= Setup done! Thank you for using Dynamic.Supervisor! =-="
+echo ""
