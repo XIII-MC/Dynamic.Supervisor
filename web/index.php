@@ -1,6 +1,6 @@
 <?php
-$hostsFile = '/etc/dynamic/supervisor/config/hosts.json';
-$resultsFile = '/etc/dynamic/supervisor/results/ping_results.json';
+$hostsFile = '/etc/gteam/dynamic/supervisor/config/hosts.json';
+$resultsFile = '/etc/gteam/dynamic/supervisor/results/ping_results.json';
 
 if (file_exists($hostsFile)) {
 
