@@ -2,7 +2,37 @@
 $hostsFile = '/etc/dynamic/supervisor/config/hosts.json';
 $resultsFile = '/etc/dynamic/supervisor/results/ping_results.json';
 
-$hosts = file_exists($hostsFile) ? json_decode(file_get_contents($hostsFile), true) : [];
+if (file_exists($hostsFile)) {
+
+    $hosts = json_decode(file_get_contents($hostsFile), true);
+
+    if (!is_array($hosts)) {
+
+        $hosts = [];
+
+    }
+
+} else {
+
+    $hosts = [];
+
+}
+
+if (file_exists($resultsFile)) {
+
+    $results = json_decode(file_get_contents($resultsFile), true);
+
+    if (!is_array($results)) {
+
+        $results = [];
+
+    }
+
+} else {
+
+    $results = [];
+
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -43,8 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 }
 
-$results = file_exists($resultsFile) ? json_decode(file_get_contents($resultsFile), true) : [];
-
 ?>
 
 <!DOCTYPE html>
@@ -55,30 +83,9 @@ $results = file_exists($resultsFile) ? json_decode(file_get_contents($resultsFil
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Dynamic.Supervisor</title>
-
-    <style>
-
-        body { font-family: Arial, sans-serif; text-align: center; }
-        table { width: 75%; margin: auto; border-collapse: collapse; }
-        th, td { border: 1px solid black; padding: 10px; }
-
-        .latency-low { background-color: green; color: white; }
-        .latency-medium { background-color: orange; color: white; }
-        .latency-high { background-color: red; color: white; }
-        .latency-loading { background-color: blue; color: white; }
-
-        table tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-
-        table tr:nth-child(odd) {
-            background-color: white;
-        }
-
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 
 </head>
-
 <body>
 
     <h2>Manage Hosts</h2>
@@ -150,40 +157,51 @@ $results = file_exists($resultsFile) ? json_decode(file_get_contents($resultsFil
 
             try {
 
-                const data = <?php echo $results; ?>;
+                const response = await fetch('php/results.php');
+                const data = await response.json();
 
-                data.forEach((host) => {
+                if (Array.isArray(data)) {
 
-                    const hostIP = host.ip;
-                    const latency = host.latency_ms;
-                    const latencyCell = document.getElementById(`latency-${hostIP}`);
+                    data.forEach((host) => {
 
-                    if (latencyCell) {
+                        const hostIP = host.ip;
+                        const latency = host.latency_ms;
+                        const latencyCell = document.getElementById(`latency-${hostIP}`);
 
-                        if (latency === null || latency === -1) {
+                        if (latencyCell) {
 
-                            latencyCell.textContent = 'Timeout';
-                            latencyCell.className = 'latency-high';
+                            if (latency === null || latency === -1) {
 
-                        } else if (latency < 10) {
+                                latencyCell.textContent = 'Timeout';
+                                latencyCell.className = 'latency-high';
 
-                            latencyCell.textContent = `${latency} ms`;
-                            latencyCell.className = 'latency-low';
+                            } else if (latency < 10) {
 
-                        } else {
+                                latencyCell.textContent = `${latency} ms`;
+                                latencyCell.className = 'latency-low';
 
-                            latencyCell.textContent = `${latency} ms`;
-                            latencyCell.className = 'latency-medium';
+                            } else {
+
+                                latencyCell.textContent = `${latency} ms`;
+                                latencyCell.className = 'latency-medium';
+
+                            }
+
+                            if (latency === undefined) {
+
+                                latencyCell.className = 'latency-loading';
+
+                            }
 
                         }
 
-                        if (latency === undefined) {
-                            latencyCell.className = 'latency-loading';
-                        }
+                    });
 
-                    }
+                } else {
 
-                });
+                    console.error("Error: Results data is not an array.");
+
+                }
 
             } catch (error) {
 
