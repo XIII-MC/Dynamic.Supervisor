@@ -4,10 +4,10 @@ Monitor your network/machines through a simple and basic web UI made in PHP.
 
 ## Install
 
-This will download the latest install.sh script.
-```wget -O install.sh supervisor.gteam.cloud```
-After this, simply run the script.
-````bash install.sh```
+This will download the latest install.sh script.<br>
+`wget -O install.sh supervisor.gteam.cloud`<br>
+After this, simply run the script.<br>
+`bash install.sh`<br>
 
 Your web UI is now accessible under http://your-ip/supervisor/
 
