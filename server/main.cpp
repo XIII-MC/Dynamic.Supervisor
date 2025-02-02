@@ -115,7 +115,7 @@ void runPingCycle(const std::string &inputFile, const std::string& outputFile, c
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(100, 1000);
+    std::uniform_int_distribution<> dis(100, 2000);
 
     while (keepRunning) {
 
@@ -158,7 +158,7 @@ int main() {
 
     }
 
-    int sleepIntervalSeconds = 1;
+    int sleepIntervalSeconds = 2;
     std::thread pingCycleThread(runPingCycle, inputFile, outputFile, sleepIntervalSeconds);
 
     pingCycleThread.join();
