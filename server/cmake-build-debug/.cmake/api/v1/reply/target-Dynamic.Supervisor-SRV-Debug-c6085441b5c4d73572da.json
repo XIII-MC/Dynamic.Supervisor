@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "Dynamic_Supervisor_SRV"
+			"path" : "Dynamic.Supervisor-SRV"
 		}
 	],
 	"backtrace" : 1,
@@ -53,7 +53,7 @@
 			]
 		}
 	],
-	"id" : "Dynamic_Supervisor_SRV::@6890427a1f51a3e7e1df",
+	"id" : "Dynamic.Supervisor-SRV::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -69,8 +69,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "Dynamic_Supervisor_SRV",
-	"nameOnDisk" : "Dynamic_Supervisor_SRV",
+	"name" : "Dynamic.Supervisor-SRV",
+	"nameOnDisk" : "Dynamic.Supervisor-SRV",
 	"paths" : 
 	{
 		"build" : ".",
