@@ -123,5 +123,5 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/Dynamic.Supervisor-SRV.dir/DependInfo.cmake"
+  "CMakeFiles/Dynamic.Supervisor-SRV-ARM64.dir/DependInfo.cmake"
   )
