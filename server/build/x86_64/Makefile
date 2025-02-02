@@ -117,7 +117,7 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named Dynamic.Supervisor-SRV-x86_64
+# Target rules for targets named Dynamic.Supervisor-SRV
 
 # Build rule for target.
 Dynamic.Supervisor-SRV-x86_64: cmake_check_build_system
