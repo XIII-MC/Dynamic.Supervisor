@@ -1,0 +1,60 @@
+body {
+
+    font-family: Arial, sans-serif;
+    text-align: center;
+
+}
+
+table {
+
+    width: 75%; margin: auto;
+    border-collapse: collapse;
+
+}
+
+th, td {
+
+    border: 1px solid black;
+    padding: 10px;
+
+}
+
+.latency-low {
+
+    background-color: green;
+    color: white;
+
+}
+
+.latency-medium {
+
+    background-color: orange;
+    color: white;
+
+}
+
+.latency-high {
+
+    background-color: red;
+    color: white;
+
+}
+
+.latency-loading {
+
+    background-color: blue;
+    color: white;
+
+}
+
+table tr:nth-child(even) {
+
+    background-color: #f2f2f2;
+
+}
+
+table tr:nth-child(odd) {
+
+    background-color: white;
+
+}

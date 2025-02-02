@@ -159,8 +159,6 @@ int main() {
     }
 
     int sleepIntervalSeconds = 1;
-
-    // Start the ping cycle in a separate thread
     std::thread pingCycleThread(runPingCycle, inputFile, outputFile, sleepIntervalSeconds);
 
     // Keep running the ping cycle
