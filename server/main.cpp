@@ -71,6 +71,7 @@ double pingHost(const Host& host) {
     }
 
     return -1.0; // Failure (timeout)
+
 }
 
 void processHost(const Host& host) {
@@ -106,6 +107,7 @@ void saveResults(const std::string& filename) {
     // Write the updated results
     file << json(results).dump(4);
     file.close();
+
 }
 
 void runPingCycle(const std::string &inputFile, const std::string& outputFile, const int sleepIntervalSeconds) {
@@ -137,13 +139,15 @@ void runPingCycle(const std::string &inputFile, const std::string& outputFile, c
             std::lock_guard lock(results_mutex);
             results.clear();
         }
+
     }
+
 }
 
 int main() {
 
-    const std::string inputFile = "../../web/hosts.json";
-    std::string outputFile = "../../web/ping_results.json";
+    const std::string inputFile = "/etc/dynamic/supervisor/config/hosts.json";
+    std::string outputFile = "/etc/dynamic/supervisor/results/ping_results.json";
 
     // Load hosts from the JSON file
     if (loadHosts(inputFile).empty()) {
@@ -163,4 +167,5 @@ int main() {
     pingCycleThread.join();
 
     return 0;
+
 }

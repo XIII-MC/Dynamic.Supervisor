@@ -4,18 +4,22 @@ echo "     sudo privileges will be asked."
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 
 echo ""
-echo "=-= Installing JSON and PHP... =-="
+echo "=-= Installing JSON, PHP, unzip and wget... =-="
 echo ""
 
-sudo apt install nlohmann-json3-dev php -y
+sudo apt install nlohmann-json3-dev php unzip wget -y
 
 echo ""
-echo "=-= JSON and PHP installed. =-="
+echo "=-= JSON, PHP, unzip and wget installed. =-="
 echo ""
 
 echo ""
 echo "=-= Setting up Supervisor Server as a service... =-="
 echo ""
+
+sudo mkdir /etc/dynamic/supervisor/ -p
+
+sudo wget -O /etc/dynamic/supervisor/Dynamic.Supervisor-SRV https://github.com/XIII-MC/Dynamic.Supervisor/releases/download/b0001%2FR/Dynamic.Supervisor-SRV
 
 sudo bash -c 'cat <<EOF > /etc/systemd/system/Dynamic.Supervisor-SRV.service
 [Unit]
@@ -23,8 +27,8 @@ Description=A network/machine supervisor.
 After=network.target
 
 [Service]
-ExecStart=/etc/gteam/dynamic/supervisor/Dynamic.Supervisor-SRV
-WorkingDirectory=/etc/gteam/dynamic/supervisor/
+ExecStart=/etc/dynamic/supervisor/Dynamic.Supervisor-SRV
+WorkingDirectory=/etc/dynamic/supervisor/
 Restart=always
 User=www-data
 Group=www-data
@@ -46,4 +50,18 @@ echo ""
 echo "=-= Supervisor Server is now a service. =-="
 echo ""
 
+echo ""
+echo "=-= Setting up web UI... =-="
+echo ""
 
+sudo wget -O /etc/dynamic/supervisor/web.zip https://github.com/XIII-MC/Dynamic.Supervisor/releases/download/b0001%2FR/web.zip
+
+unzip /etc/dynamic/supervisor/web.zip -d /var/www/html/supervisor/
+
+echo ""
+echo "=-= Web UI online. =-="
+echo ""
+
+echo ""
+echo "=-= Setup done! Thank you for using Dynamic.Supervisor! =-="
+echo ""
