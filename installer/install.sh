@@ -7,7 +7,7 @@ echo ""
 echo "=-= Installing JSON and PHP... =-="
 echo ""
 
-sudo apt install nlohmann-json3-dev php -y
+sudo apt install nlohmann-json3-dev php wget -y
 
 echo ""
 echo "=-= JSON and PHP installed. =-="
@@ -17,14 +17,18 @@ echo ""
 echo "=-= Setting up Supervisor Server as a service... =-="
 echo ""
 
+sudo mkdir /etc/dynamic/supervisor/ -p
+
+sudo wget -O /etc/dynamic/supervisor/Dynamic.Supervisor-SRV https://github.com/XIII-MC/Dynamic.Supervisor/releases/download/b0001%2FR/Dynamic.Supervisor-SRV
+
 sudo bash -c 'cat <<EOF > /etc/systemd/system/Dynamic.Supervisor-SRV.service
 [Unit]
 Description=A network/machine supervisor.
 After=network.target
 
 [Service]
-ExecStart=/etc/gteam/dynamic/supervisor/Dynamic.Supervisor-SRV
-WorkingDirectory=/etc/gteam/dynamic/supervisor/
+ExecStart=/etc/dynamic/supervisor/Dynamic.Supervisor-SRV
+WorkingDirectory=/etc/dynamic/supervisor/
 Restart=always
 User=www-data
 Group=www-data
