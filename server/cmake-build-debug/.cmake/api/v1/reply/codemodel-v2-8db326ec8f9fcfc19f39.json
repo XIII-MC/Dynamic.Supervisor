@@ -27,7 +27,7 @@
 					[
 						0
 					],
-					"name" : "Dynamic_Supervisor",
+					"name" : "Dynamic.Supervisor",
 					"targetIndexes" : 
 					[
 						0
@@ -38,9 +38,9 @@
 			[
 				{
 					"directoryIndex" : 0,
-					"id" : "Dynamic_Supervisor_SRV::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-Dynamic_Supervisor_SRV-Debug-407c348f91a9c160df4c.json",
-					"name" : "Dynamic_Supervisor_SRV",
+					"id" : "Dynamic.Supervisor-SRV::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-Dynamic.Supervisor-SRV-Debug-c6085441b5c4d73572da.json",
+					"name" : "Dynamic.Supervisor-SRV",
 					"projectIndex" : 0
 				}
 			]
