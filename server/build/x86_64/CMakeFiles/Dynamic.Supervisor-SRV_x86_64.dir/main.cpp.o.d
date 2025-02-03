@@ -1,4 +1,4 @@
-CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/main.cpp.o: \
+CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/main.cpp.o: \
  /home/user/CLionProjects/Dynamic.Supervisor/server/main.cpp \
  /usr/include/stdc-predef.h /usr/include/c++/12/iostream \
  /usr/include/x86_64-linux-gnu/c++/12/bits/c++config.h \

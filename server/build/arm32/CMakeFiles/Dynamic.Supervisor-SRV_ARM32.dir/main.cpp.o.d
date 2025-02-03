@@ -1,4 +1,4 @@
-CMakeFiles/Dynamic.Supervisor-SRV-ARM32.dir/main.cpp.o: \
+CMakeFiles/Dynamic.Supervisor-SRV_ARM32.dir/main.cpp.o: \
  /home/user/CLionProjects/Dynamic.Supervisor/server/main.cpp \
  /usr/arm-linux-gnueabihf/include/stdc-predef.h \
  /usr/arm-linux-gnueabihf/include/c++/12/iostream \

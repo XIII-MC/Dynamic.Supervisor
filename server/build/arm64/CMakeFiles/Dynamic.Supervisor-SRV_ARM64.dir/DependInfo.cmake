@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/user/CLionProjects/Dynamic.Supervisor/server/main.cpp" "CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/main.cpp.o" "gcc" "CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/main.cpp.o.d"
+  "/home/user/CLionProjects/Dynamic.Supervisor/server/main.cpp" "CMakeFiles/Dynamic.Supervisor-SRV_ARM64.dir/main.cpp.o" "gcc" "CMakeFiles/Dynamic.Supervisor-SRV_ARM64.dir/main.cpp.o.d"
   )
 
 # Targets to which this target links.
