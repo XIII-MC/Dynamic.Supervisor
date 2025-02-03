@@ -30,10 +30,11 @@ echo ""
 sudo mkdir -p /var/www/html/supervisor/
 sudo mkdir -p /etc/gteam/dynamic/supervisor/config /etc/gteam/dynamic/supervisor/results
 
-sudo touch /etc/gteam/dynamic/supervisor/config/hosts.json
-sudo touch /etc/gteam/dynamic/supervisor/results/ping_results.json
+if [ ! -f /etc/gteam/dynamic/supervisor/config/hosts.json ]; then
 
-sudo bash -c 'cat <<EOF > /etc/gteam/dynamic/supervisor/config/hosts.json
+  sudo touch /etc/gteam/dynamic/supervisor/config/hosts.json
+
+  sudo bash -c 'cat <<EOF > /etc/gteam/dynamic/supervisor/config/hosts.json
 [
     {
         "name": "Local",
@@ -41,6 +42,10 @@ sudo bash -c 'cat <<EOF > /etc/gteam/dynamic/supervisor/config/hosts.json
     }
 ]
 EOF'
+
+fi
+
+sudo touch /etc/gteam/dynamic/supervisor/results/ping_results.json
 
 sudo wget -O /etc/gteam/dynamic/supervisor/web.zip https://github.com/XIII-MC/Dynamic.Supervisor/releases/latest/download/web.zip
 
