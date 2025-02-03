@@ -1,3 +1,5 @@
+cd server
+
 BUILD_DIR="./build"
 BUILD_X86_64_DIR="${BUILD_DIR}/x86_64"
 BUILD_ARM64_DIR="${BUILD_DIR}/arm64"

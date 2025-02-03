@@ -9,6 +9,7 @@
 #include <mutex>
 #include <chrono>
 #include <atomic>
+#include <random>
 
 using json = nlohmann::json;
 
@@ -74,7 +75,9 @@ double pingHost(const Host& host) {
 
 }
 
-void processHost(const Host& host) {
+void processHost(const Host& host, int delayMilliseconds) {
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(delayMilliseconds));
 
     double latency = pingHost(host);
 
@@ -83,7 +86,7 @@ void processHost(const Host& host) {
     const json entry = {
         {"name", host.name},
         {"ip", host.ip},
-        {"latency_ms", latency >= 0 ? latency : -1}  // Mark as -1 if host failed to respond
+        {"latency_ms", latency >= 0 ? latency : -1}
     };
 
     results.push_back(entry);
@@ -110,6 +113,10 @@ void saveResults(const std::string& filename) {
 
 void runPingCycle(const std::string &inputFile, const std::string& outputFile, const int sleepIntervalSeconds) {
 
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(100, 2000);
+
     while (keepRunning) {
 
         std::vector<Host> hosts = loadHosts(inputFile);
@@ -117,7 +124,8 @@ void runPingCycle(const std::string &inputFile, const std::string& outputFile, c
         std::vector<std::thread> threads;
 
         for (const auto& host : hosts) {
-            threads.emplace_back(processHost, host);
+            int randomDelay = dis(gen);
+            threads.emplace_back(processHost, host, randomDelay);
         }
 
         std::this_thread::sleep_for(std::chrono::seconds(sleepIntervalSeconds));
@@ -150,7 +158,7 @@ int main() {
 
     }
 
-    int sleepIntervalSeconds = 1;
+    int sleepIntervalSeconds = 2;
     std::thread pingCycleThread(runPingCycle, inputFile, outputFile, sleepIntervalSeconds);
 
     pingCycleThread.join();

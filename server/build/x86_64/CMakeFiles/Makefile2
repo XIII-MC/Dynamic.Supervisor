@@ -63,7 +63,7 @@ CMAKE_BINARY_DIR = /home/user/CLionProjects/Dynamic.Supervisor/server/build/x86_
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/all
+all: CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -71,34 +71,34 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/clean
+clean: CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir
+# Target rules for target CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir
 
 # All Build rule for target.
-CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/build.make CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/build.make CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/user/CLionProjects/Dynamic.Supervisor/server/build/x86_64/CMakeFiles --progress-num=1,2 "Built target Dynamic.Supervisor-SRV-x86_64"
-.PHONY : CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/all
+CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/build.make CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/build.make CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/user/CLionProjects/Dynamic.Supervisor/server/build/x86_64/CMakeFiles --progress-num=1,2 "Built target Dynamic.Supervisor-SRV_x86_64"
+.PHONY : CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/rule: cmake_check_build_system
+CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/user/CLionProjects/Dynamic.Supervisor/server/build/x86_64/CMakeFiles 2
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/user/CLionProjects/Dynamic.Supervisor/server/build/x86_64/CMakeFiles 0
-.PHONY : CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/rule
+.PHONY : CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/rule
 
 # Convenience name for target.
-Dynamic.Supervisor-SRV-x86_64: CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/rule
-.PHONY : Dynamic.Supervisor-SRV-x86_64
+Dynamic.Supervisor-SRV_x86_64: CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/rule
+.PHONY : Dynamic.Supervisor-SRV_x86_64
 
 # clean rule for target.
-CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/build.make CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/clean
-.PHONY : CMakeFiles/Dynamic.Supervisor-SRV-x86_64.dir/clean
+CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/build.make CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/clean
+.PHONY : CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.
