@@ -1,5 +1,5 @@
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
-echo "     Dynamic.Supervisor Installer (b0002/R)"
+echo "     Dynamic.Supervisor Installer (b0003/R)"
 echo "     sudo privileges will be asked."
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 
