@@ -74,7 +74,7 @@ void handleClient(const int clientSocket, const std::string& allowedIP) {
 
     }
 
-    const std::string statsContent = readFileContent("/etc/gteam/dynamic/supervisor/client/stats.json");
+    const std::string statsContent = readFileContent("/etc/gteam/dynamic/supervisor/client/results/monitor_results.json");
     if (statsContent.empty()) {
 
         const auto errorMessage = "500 Internal Server Error: Could not read stats file\n";
@@ -133,7 +133,7 @@ void runServer(const std::string& configPath) {
     std::string allowedIP = getAllowedIP(configPath);
     if (allowedIP.empty()) {
 
-        std::cerr << "Failed to retrieve allowed IP from config.json" << std::endl;
+        std::cerr << "Failed to retrieve allowed IP from hosts.json" << std::endl;
 
         return;
 
@@ -198,7 +198,7 @@ double getCpuUsage() {
 
 }
 
-void monitorCpuUsage(const std::string& statsFile) {
+void monitorCpuUsage(const std::string& resultsFile) {
 
     while (keepRunning) {
 
@@ -210,17 +210,17 @@ void monitorCpuUsage(const std::string& statsFile) {
         };
 
         std::lock_guard lock(file_mutex);
-        if (std::ofstream file(statsFile, std::ios::trunc); file) {
+        if (std::ofstream file(resultsFile, std::ios::trunc); file) {
 
             file << cpuStats.dump(4);
 
         } else {
 
-            std::cerr << "Error: Could not write to " << statsFile << std::endl;
+            std::cerr << "Error: Could not write to " << resultsFile << std::endl;
         }
 
 
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
 
     }
 
@@ -228,11 +228,11 @@ void monitorCpuUsage(const std::string& statsFile) {
 
 int main() {
 
-    const std::string configPath = "/etc/gteam/dynamic/supervisor/client/config.json";
-    const std::string statsFile = "/etc/gteam/dynamic/supervisor/client/stats.json";
+    const std::string configPath = "/etc/gteam/dynamic/supervisor/client/config/hosts.json";
+    const std::string resultsFile = "/etc/gteam/dynamic/supervisor/client/results/monitor_results.json";
 
     std::thread serverThread(runServer, configPath);
-    std::thread cpuMonitoringThread(monitorCpuUsage, statsFile);
+    std::thread cpuMonitoringThread(monitorCpuUsage, resultsFile);
 
     serverThread.join();
     cpuMonitoringThread.join();

@@ -1,0 +1,1 @@
+arm-linux-gnueabihf-g++ -O3 -DNDEBUG "CMakeFiles/Dynamic.Supervisor-SRV_ARM32.dir/server/main.cpp.o" -o Dynamic.Supervisor-SRV_ARM32 

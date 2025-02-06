@@ -1,6 +1,6 @@
 <?php
-$resultsFile = '/etc/gteam/dynamic/supervisor/results/ping_results.json';
-$cpuFile = '/etc/gteam/dynamic/supervisor/results/monitor_results.json';
+$resultsFile = '/etc/gteam/dynamic/supervisor/server/results/ping_results.json';
+$cpuFile = '/etc/gteam/dynamic/supervisor/server/results/monitor_results.json';
 
 $results = [];
 if (file_exists($resultsFile)) {
@@ -33,7 +33,7 @@ if (file_exists($cpuFile)) {
 
 foreach ($results as &$host) {
 
-    $host['cpu_usage'] = $cpuUsageByIP[$host['ip']] ?? 0;
+    $host['cpu_usage'] = $cpuUsageByIP[$host['ip']] ?? "Timeout";
 
 }
 

@@ -148,7 +148,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=Dynamic.Supervisor-SRV
+CMAKE_PROJECT_NAME:STATIC=Dynamic.Supervisor
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -223,6 +223,15 @@ Dynamic.Supervisor-SRV_IS_TOP_LEVEL:STATIC=ON
 
 //Value Computed by CMake
 Dynamic.Supervisor-SRV_SOURCE_DIR:STATIC=/home/user/CLionProjects/Dynamic.Supervisor
+
+//Value Computed by CMake
+Dynamic.Supervisor_BINARY_DIR:STATIC=/home/user/CLionProjects/Dynamic.Supervisor/cmake-build-debug
+
+//Value Computed by CMake
+Dynamic.Supervisor_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+Dynamic.Supervisor_SOURCE_DIR:STATIC=/home/user/CLionProjects/Dynamic.Supervisor
 
 
 ########################

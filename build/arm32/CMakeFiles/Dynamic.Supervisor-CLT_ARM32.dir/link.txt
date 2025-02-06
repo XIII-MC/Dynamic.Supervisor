@@ -1,0 +1,1 @@
+arm-linux-gnueabihf-g++ -O3 -DNDEBUG "CMakeFiles/Dynamic.Supervisor-CLT_ARM32.dir/client/main.cpp.o" -o Dynamic.Supervisor-CLT_ARM32 

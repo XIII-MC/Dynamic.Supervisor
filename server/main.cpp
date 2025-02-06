@@ -74,7 +74,6 @@ void processPing(const Host& host, json& results) {
     }
 
     std::lock_guard lock(results_mutex);
-
     results.push_back({
         {"name", host.name},
         {"ip", host.ip},
@@ -95,6 +94,12 @@ void monitorHost(const Host& host, json& results) {
 
     }
 
+    timeval timeout{};
+    timeout.tv_sec = 1;
+    timeout.tv_usec = 0;
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+
     sockaddr_in serverAddr{};
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(6799);
@@ -109,10 +114,9 @@ void monitorHost(const Host& host, json& results) {
 
     }
 
-    if (connect(sock, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(serverAddr)) < 0) {
+    if (connect(sock, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) < 0) {
 
         std::lock_guard lock(results_mutex);
-
         results.push_back({
             {"name", host.name},
             {"ip", host.ip},
@@ -129,7 +133,6 @@ void monitorHost(const Host& host, json& results) {
     if (const int bytesRead = read(sock, buffer, sizeof(buffer) - 1); bytesRead > 0) {
 
         std::lock_guard lock(results_mutex);
-
         results.push_back({
             {"name", host.name},
             {"ip", host.ip},
@@ -140,21 +143,21 @@ void monitorHost(const Host& host, json& results) {
     } else {
 
         std::lock_guard lock(results_mutex);
-
         results.push_back({
             {"name", host.name},
             {"ip", host.ip},
             {"status", "no response"}
         });
+
     }
 
     close(sock);
 
 }
+
 void saveResults(const std::string& filename, const json& data) {
 
     std::lock_guard lock(results_mutex);
-
     std::ofstream file(filename, std::ios::trunc);
     if (!file) {
 
@@ -182,13 +185,13 @@ void runCycle(const std::string& inputFile, const std::string& outputFile, const
             threads.emplace_back(task, host, std::ref(results));
         }
 
+        std::this_thread::sleep_for(std::chrono::seconds(sleepIntervalSeconds));
+
         for (auto& t : threads) {
-            t.join();
+            t.detach();
         }
 
         saveResults(outputFile, results);
-
-        std::this_thread::sleep_for(std::chrono::seconds(sleepIntervalSeconds));
 
     }
 
@@ -196,10 +199,10 @@ void runCycle(const std::string& inputFile, const std::string& outputFile, const
 
 int main() {
 
-    const std::string inputFile = "/etc/gteam/dynamic/supervisor/config/hosts.json";
+    const std::string inputFile = "/etc/gteam/dynamic/supervisor/server/config/hosts.json";
 
-    std::string pingOutputFile = "/etc/gteam/dynamic/supervisor/results/ping_results.json";
-    std::string monitorOutputFile = "/etc/gteam/dynamic/supervisor/results/monitor_results.json";
+    std::string pingOutputFile = "/etc/gteam/dynamic/supervisor/server/results/ping_results.json";
+    std::string monitorOutputFile = "/etc/gteam/dynamic/supervisor/server/results/monitor_results.json";
 
     if (loadHosts(inputFile).empty()) {
 

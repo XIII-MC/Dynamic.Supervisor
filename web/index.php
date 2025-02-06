@@ -1,6 +1,6 @@
 <?php
-$hostsFile = '/etc/gteam/dynamic/supervisor/config/hosts.json';
-$resultsFile = '/etc/gteam/dynamic/supervisor/results/ping_results.json';
+$hostsFile = '/etc/gteam/dynamic/supervisor/server/config/hosts.json';
+$resultsFile = '/etc/gteam/dynamic/supervisor/server/results/ping_results.json';
 
 if (file_exists($hostsFile)) {
 
@@ -155,25 +155,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if (latency === null || latency === -1) {
 
                             latencyCell.textContent = 'Timeout';
-                            latencyCell.className = 'latency-high';
+                            latencyCell.className = 'color-high';
 
                         } else if (latency < 10) {
 
                             latencyCell.textContent = `${latency} ms`;
-                            latencyCell.className = 'latency-low';
+                            latencyCell.className = 'color-low';
 
                         } else {
 
                             latencyCell.textContent = `${latency} ms`;
-                            latencyCell.className = 'latency-medium';
+                            latencyCell.className = 'color-medium';
                         }
 
                     }
 
                     if (cpuCell) {
 
-                        cpuCell.textContent = `${cpuUsage.toFixed(2)}%`;
-                        cpuCell.className = 'cpu-usage';
+                        if (isNaN(cpuUsage)) {
+
+                            cpuCell.textContent = cpuUsage;
+                            cpuCell.className = 'color-unknown';
+
+                        } else {
+
+                            const cpuValue = parseFloat(cpuUsage).toFixed(2);
+                            cpuCell.textContent = `${cpuValue}%`;
+
+                            if (cpuValue < 20) {
+
+                                cpuCell.className = 'color-low';
+
+                            } else if (cpuValue >= 20 && cpuValue <= 80) {
+
+                                cpuCell.className = 'color-medium';
+
+                            } else {
+
+                                cpuCell.className = 'color-high';
+
+                            }
+
+                        }
 
                     }
 
