@@ -139,7 +139,7 @@ EOF"
 
   sudo chown root -R /etc/gteam/dynamic/supervisor/client/
 
-  sudo bash -c 'cat <<EOF > /etc/systemd/system/Dynamic.Supervisor-SRV.service
+  sudo bash -c 'cat <<EOF > /etc/systemd/system/Dynamic.Supervisor-CLT.service
 [Unit]
 Description=A network/machine supervisor.
 After=network.target
@@ -169,10 +169,11 @@ EOF'
 }
 
 echo ""
-echo "- GTeam's Dynamic.Supervisor Setup Script | Build N°4/NLTS/NHF/DEV/RW | Tested & built for Debian/Ubuntu -"
+echo "- GTeam's Dynamic.Supervisor Setup Script | Build N°4/NLTS/NHF/RELEASE | Tested & built for Debian/Ubuntu -"
 echo "! This is NOT a LTS (Long Term Support) version."
 echo "! This is NOT a HF (HotFix) version."
-echo "- Thank you for using our script! (https://github.com/GTeamX/VPNSetup) -"
+echo "- Thank you for using our script! (https://github.com/GTeamX/Dynamic.Supervisor) -"
+echo ""
 
 ARCH=$(uname -m)
 
@@ -186,12 +187,14 @@ fi
 
 while true; do
 
+    echo ""
     echo "Choose an install/upgrade/uninstall option."
     echo "1 | Install Supervisor-Server."
     echo "2 | Install the Web UI for Supervisor-Server"
     echo "3 | Install Supervisor-Client"
     echo "4 | Exit"
     read -r -p "Enter your choice [1-4]: " choice
+    echo ""
 
     case $choice in
 
@@ -214,6 +217,8 @@ while true; do
             ;;
 
         4)
+
+          echo ": Exiting setup..."
   
           exit 0
 
