@@ -173,7 +173,6 @@ echo "- GTeam's Dynamic.Supervisor Setup Script | Build N°4/NLTS/NHF/RELEASE | 
 echo "! This is NOT a LTS (Long Term Support) version."
 echo "! This is NOT a HF (HotFix) version."
 echo "- Thank you for using our script! (https://github.com/GTeamX/Dynamic.Supervisor) -"
-echo ""
 
 ARCH=$(uname -m)
 

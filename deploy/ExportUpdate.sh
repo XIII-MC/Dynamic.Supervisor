@@ -2,7 +2,7 @@ rm -rf export/
 
 mkdir -p export
 
-zip -r export/web.zip web/
+cd web && zip -r ../export/web.zip ./* && cd ..
 
 bash deploy/CrossArchBuild.sh
 
