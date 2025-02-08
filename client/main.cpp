@@ -51,13 +51,12 @@ std::string getAllowedIP(const std::string& configPath) {
 
 }
 
-void handleClient(const int clientSocket, const std::string& allowedIP) {
+void handleClient(const int clientSocket, const std::string& allowedIP, const std::string& clientIP) {
 
     sockaddr_in clientAddr{};
     socklen_t addrLen = sizeof(clientAddr);
     getpeername(clientSocket, reinterpret_cast<sockaddr*>(&clientAddr), &addrLen);
 
-    const std::string clientIP = inet_ntoa(clientAddr.sin_addr);
     std::cout << "Connection from: " << clientIP << std::endl;
 
     if (clientIP != allowedIP) {
@@ -93,8 +92,7 @@ void handleClient(const int clientSocket, const std::string& allowedIP) {
 
 void runServer(const std::string& configPath) {
 
-    const int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-
+    const int serverSocket = socket(AF_INET6, SOCK_STREAM, 0);
     if (serverSocket == -1) {
 
         std::cerr << "Failed to create socket" << std::endl;
@@ -103,10 +101,21 @@ void runServer(const std::string& configPath) {
 
     }
 
-    sockaddr_in serverAddr{};
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = INADDR_ANY;
-    serverAddr.sin_port = htons(PORT);
+    constexpr int option = 0;
+    if (setsockopt(serverSocket, IPPROTO_IPV6, IPV6_V6ONLY, &option, sizeof(option)) < 0) {
+
+        std::cerr << "Failed to set IPV6_V6ONLY option" << std::endl;
+
+        close(serverSocket);
+
+        return;
+
+    }
+
+    sockaddr_in6 serverAddr{};
+    serverAddr.sin6_family = AF_INET6;
+    serverAddr.sin6_addr = in6addr_any;
+    serverAddr.sin6_port = htons(PORT);
 
     if (bind(serverSocket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) < 0) {
 
@@ -128,7 +137,7 @@ void runServer(const std::string& configPath) {
 
     }
 
-    std::cout << "Server listening on port " << PORT << std::endl;
+    std::cout << "Server listening on port " << PORT << " (IPv4 and IPv6)" << std::endl;
 
     std::string allowedIP = getAllowedIP(configPath);
     if (allowedIP.empty()) {
@@ -141,26 +150,47 @@ void runServer(const std::string& configPath) {
 
     while (keepRunning) {
 
-        sockaddr_in clientAddr{};
+        sockaddr_storage clientAddr{};
         socklen_t addrLen = sizeof(clientAddr);
-        int clientSocket = accept(serverSocket, reinterpret_cast<struct sockaddr*>(&clientAddr), &addrLen);
+        int clientSocket = accept(serverSocket, reinterpret_cast<sockaddr*>(&clientAddr), &addrLen);
+
+        if (clientSocket >= 0) {
+
+            char clientIP[INET6_ADDRSTRLEN] = {};
+
+            if (clientAddr.ss_family == AF_INET) {
+
+                const auto* addr = reinterpret_cast<sockaddr_in*>(&clientAddr);
+
+                inet_ntop(AF_INET, &addr->sin_addr, clientIP, INET_ADDRSTRLEN);
+
+            } else if (clientAddr.ss_family == AF_INET6) {
+
+                const auto* addr6 = reinterpret_cast<sockaddr_in6*>(&clientAddr);
+
+                inet_ntop(AF_INET6, &addr6->sin6_addr, clientIP, INET6_ADDRSTRLEN);
+
+            }
+
+            std::cout << "Connection from: " << clientIP << std::endl;
+
+            std::thread(handleClient, clientSocket, allowedIP, clientIP).detach();
+
+
+        }
 
         if (clientSocket < 0) {
 
             std::cerr << "Failed to accept connection" << std::endl;
 
-            continue;
-
         }
-
-
-        std::thread(handleClient, clientSocket, allowedIP).detach();
 
     }
 
     close(serverSocket);
 
 }
+
 
 double getCpuUsage() {
 
