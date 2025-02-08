@@ -1,6 +1,6 @@
 <?php
-$hostsFile = '/etc/gteam/dynamic/supervisor/config/hosts.json';
-$resultsFile = '/etc/gteam/dynamic/supervisor/results/ping_results.json';
+$hostsFile = '/etc/gteam/dynamic/supervisor/server/config/hosts.json';
+$resultsFile = '/etc/gteam/dynamic/supervisor/server/results/ping_results.json';
 
 if (file_exists($hostsFile)) {
 
@@ -18,30 +18,12 @@ if (file_exists($hostsFile)) {
 
 }
 
-if (file_exists($resultsFile)) {
-
-    $results = json_decode(file_get_contents($resultsFile), true);
-
-    if (!is_array($results)) {
-
-        $results = [];
-
-    }
-
-} else {
-
-    $results = [];
-
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // Add new host
     if (isset($_POST['name']) && isset($_POST['ip'])) {
 
         $hosts[] = ["name" => $_POST['name'], "ip" => $_POST['ip']];
 
-    // Remove existing host
     } elseif (isset($_POST['remove'])) {
 
         $index = $_POST['remove'];
@@ -52,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         }
 
-    // Edit host name and IP address
     } elseif (isset($_POST['edit']) && isset($_POST['edit_name']) && isset($_POST['edit_ip'])) {
 
         $index = $_POST['edit'];
@@ -69,149 +50,173 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     file_put_contents($hostsFile, json_encode($hosts, JSON_PRETTY_PRINT));
 
     header("Location: index.php");
+
     exit;
 
 }
-
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Dynamic.Supervisor</title>
     <link rel="stylesheet" href="css/style.css">
-
 </head>
 <body>
 
-    <h2>Manage Hosts</h2>
+<h2>Manage Hosts</h2>
 
-    <form method="post">
+<form method="post">
 
-        <input type="text" name="name" placeholder="Host Name" required>
-        <input type="text" name="ip" placeholder="IP Address" required>
-        <button type="submit">Add Host</button>
+    <input type="text" name="name" placeholder="Host Name" required>
+    <input type="text" name="ip" placeholder="IP Address" required>
+    <button type="submit">Add Host</button>
 
-    </form>
+</form>
 
-    <table id="pingTable" border="1">
+<table id="pingTable" border="1">
 
-        <tr>
+    <tr>
 
-            <th>Name</th>
-            <th>IP Address</th>
-            <th>Actions</th>
-            <th>Latency (ms)</th>
+        <th>Name</th>
+        <th>IP Address</th>
+        <th>Actions</th>
+        <th>Latency (ms)</th>
+        <th>CPU Usage (%)</th>
+
+    </tr>
+
+    <?php foreach ($hosts as $index => $host): ?>
+
+        <tr data-host-id="<?= htmlspecialchars($host['ip']) ?>">
+
+            <td><?= htmlspecialchars($host['name']) ?></td>
+            <td><?= htmlspecialchars($host['ip']) ?></td>
+
+            <td>
+
+                <div class="button-container">
+
+                    <form method="post" style="display:inline;">
+
+                        <input type="hidden" name="remove" value="<?= $index ?>">
+                        <button type="submit">Remove</button>
+
+                    </form>
+
+                    <form method="post" style="display:inline;">
+
+                        <input type="hidden" name="edit" value="<?= $index ?>">
+                        <input type="text" name="edit_name" value="<?= htmlspecialchars($host['name']) ?>" required>
+                        <input type="text" name="edit_ip" value="<?= htmlspecialchars($host['ip']) ?>" required>
+                        <button type="submit">Edit</button>
+
+                    </form>
+
+                </div>
+
+            </td>
+
+            <td id="latency-<?= htmlspecialchars($host['ip']) ?>" class="latency-unknown latency-loading">Loading...</td>
+            <td id="cpu-<?= htmlspecialchars($host['ip']) ?>" class="cpu-unknown">Loading...</td>
 
         </tr>
 
-        <?php foreach ($hosts as $index => $host): ?>
+    <?php endforeach; ?>
 
-            <tr data-host-id="<?= htmlspecialchars($host['ip']) ?>">
+</table>
 
-                <td><?= htmlspecialchars($host['name']) ?></td>
-                <td><?= htmlspecialchars($host['ip']) ?></td>
+<script>
 
-                <td>
+    setInterval(updateLatencyAndCpuUsage, 1000);
+    updateLatencyAndCpuUsage();
 
-                    <div class="button-container">
+    async function updateLatencyAndCpuUsage() {
 
-                        <form method="post" style="display:inline;">
+        try {
 
-                            <input type="hidden" name="remove" value="<?= $index ?>">
-                            <button type="submit">Remove</button>
+            const response = await fetch('php/results.php');
+            const data = await response.json();
 
-                        </form>
+            if (Array.isArray(data)) {
 
-                        <form method="post" style="display:inline;">
+                data.forEach((host) => {
 
-                            <input type="hidden" name="edit" value="<?= $index ?>">
-                            <input type="text" name="edit_name" value="<?= htmlspecialchars($host['name']) ?>" required>
-                            <input type="text" name="edit_ip" value="<?= htmlspecialchars($host['ip']) ?>" required>
-                            <button type="submit">Edit</button>
+                    const hostIP = host.ip;
+                    const latency = host.latency_ms;
+                    const cpuUsage = host.cpu_usage;
+                    const latencyCell = document.getElementById(`latency-${hostIP}`);
+                    const cpuCell = document.getElementById(`cpu-${hostIP}`);
 
-                        </form>
+                    if (latencyCell) {
 
-                    </div>
+                        if (latency === null || latency === -1) {
 
-                </td>
+                            latencyCell.textContent = 'Timeout';
+                            latencyCell.className = 'color-high';
 
-                <td id="latency-<?= htmlspecialchars($host['ip']) ?>" class="latency-unknown latency-loading">Loading...</td> <!-- Latency cell with blue for loading -->
+                        } else if (latency < 10) {
 
-            </tr>
+                            latencyCell.textContent = `${latency} ms`;
+                            latencyCell.className = 'color-low';
 
-        <?php endforeach; ?>
+                        } else {
 
-    </table>
+                            latencyCell.textContent = `${latency} ms`;
+                            latencyCell.className = 'color-medium';
+                        }
 
-    <script>
+                    }
 
-        setInterval(updateLatency, 1000);
-        updateLatency();
+                    if (cpuCell) {
 
-        async function updateLatency() {
+                        if (isNaN(cpuUsage)) {
 
-            try {
+                            cpuCell.textContent = cpuUsage;
+                            cpuCell.className = 'color-unknown';
 
-                const response = await fetch('php/results.php');
-                const data = await response.json();
+                        } else {
 
-                if (Array.isArray(data)) {
+                            const cpuValue = parseFloat(cpuUsage).toFixed(2);
+                            cpuCell.textContent = `${cpuValue}%`;
 
-                    data.forEach((host) => {
+                            if (cpuValue < 20) {
 
-                        const hostIP = host.ip;
-                        const latency = host.latency_ms;
-                        const latencyCell = document.getElementById(`latency-${hostIP}`);
+                                cpuCell.className = 'color-low';
 
-                        if (latencyCell) {
+                            } else if (cpuValue >= 20 && cpuValue <= 80) {
 
-                            if (latency === null || latency === -1) {
-
-                                latencyCell.textContent = 'Timeout';
-                                latencyCell.className = 'latency-high';
-
-                            } else if (latency < 10) {
-
-                                latencyCell.textContent = `${latency} ms`;
-                                latencyCell.className = 'latency-low';
+                                cpuCell.className = 'color-medium';
 
                             } else {
 
-                                latencyCell.textContent = `${latency} ms`;
-                                latencyCell.className = 'latency-medium';
-
-                            }
-
-                            if (latency === undefined) {
-
-                                latencyCell.className = 'latency-loading';
+                                cpuCell.className = 'color-high';
 
                             }
 
                         }
 
-                    });
+                    }
 
-                } else {
+                });
 
-                    console.error("Error: Results data is not an array.");
+            } else {
 
-                }
-
-            } catch (error) {
-
-                console.error("Error fetching ping results:", error);
+                console.error("Error: Results data is not an array.");
 
             }
 
+        } catch (error) {
+
+            console.error("Error fetching results:", error);
+
         }
 
-    </script>
+    }
+
+</script>
 
 </body>
 </html>

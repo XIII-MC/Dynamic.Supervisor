@@ -9,7 +9,8 @@
 #include <mutex>
 #include <chrono>
 #include <atomic>
-#include <random>
+#include <arpa/inet.h>
+#include <sys/socket.h>
 
 using json = nlohmann::json;
 
@@ -19,12 +20,12 @@ struct Host {
 };
 
 std::mutex results_mutex;
-std::vector<json> results;
 std::atomic keepRunning(true);
 
 std::vector<Host> loadHosts(const std::string& filename) {
 
     std::ifstream file(filename);
+
     if (!file) {
 
         std::cerr << "Error: Could not open " << filename << std::endl;
@@ -45,7 +46,7 @@ std::vector<Host> loadHosts(const std::string& filename) {
 
 }
 
-double pingHost(const Host& host) {
+void processPing(const Host& host, json& results) {
 
     const std::string command = "ping -c 1 -W 1 " + host.ip + " 2>&1";
 
@@ -54,7 +55,7 @@ double pingHost(const Host& host) {
 
         std::cerr << "Failed to run ping command for " << host.name << std::endl;
 
-        return -1.0;
+        return;
 
     }
 
@@ -66,37 +67,124 @@ double pingHost(const Host& host) {
 
     pclose(pipe);
 
+    double latency = -1.0;
     const std::regex latencyRegex("time=([0-9]+\\.?[0-9]*) ms");
     if (std::smatch match; std::regex_search(result, match, latencyRegex)) {
-        return std::stod(match[1]);
+        latency = std::stod(match[1]);
     }
 
-    return -1.0; // Failure (timeout)
-
-}
-
-void processHost(const Host& host, int delayMilliseconds) {
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(delayMilliseconds));
-
-    double latency = pingHost(host);
-
     std::lock_guard lock(results_mutex);
-
-    const json entry = {
+    results.push_back({
         {"name", host.name},
         {"ip", host.ip},
         {"latency_ms", latency >= 0 ? latency : -1}
-    };
-
-    results.push_back(entry);
+    });
 
 }
 
-void saveResults(const std::string& filename) {
+void monitorHost(const Host& host, json& results) {
+
+    const int sock = socket(AF_INET6, SOCK_STREAM, 0);
+    if (sock < 0) {
+
+        std::cerr << "Error: Could not create socket for " << host.name << std::endl;
+
+        return;
+
+    }
+
+    timeval timeout{};
+    timeout.tv_sec = 1;
+    timeout.tv_usec = 0;
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+
+    sockaddr_storage serverAddr{};
+    socklen_t addrLen = 0;
+
+    if (host.ip.find(':') != std::string::npos) {
+
+        auto* addr6 = reinterpret_cast<sockaddr_in6*>(&serverAddr);
+        addr6->sin6_family = AF_INET6;
+        addr6->sin6_port = htons(6799);
+
+        if (inet_pton(AF_INET6, host.ip.c_str(), &addr6->sin6_addr) <= 0) {
+
+            std::cerr << "Invalid IPv6 address for " << host.name << std::endl;
+
+            close(sock);
+
+            return;
+
+        }
+
+        addrLen = sizeof(sockaddr_in6);
+
+    } else {
+
+        auto* addr4 = reinterpret_cast<sockaddr_in*>(&serverAddr);
+        addr4->sin_family = AF_INET;
+        addr4->sin_port = htons(6799);
+
+        if (inet_pton(AF_INET, host.ip.c_str(), &addr4->sin_addr) <= 0) {
+
+            std::cerr << "Invalid IPv4 address for " << host.name << std::endl;
+
+            close(sock);
+
+            return;
+
+        }
+
+        addrLen = sizeof(sockaddr_in);
+
+    }
+
+    if (connect(sock, reinterpret_cast<sockaddr*>(&serverAddr), addrLen) < 0) {
+
+        std::lock_guard lock(results_mutex);
+        results.push_back({
+            {"name", host.name},
+            {"ip", host.ip},
+            {"status", "connection failed"}
+        });
+
+        close(sock);
+
+        return;
+
+    }
+
+    char buffer[1024] = {};
+    if (const int bytesRead = read(sock, buffer, sizeof(buffer) - 1); bytesRead > 0) {
+
+        std::lock_guard lock(results_mutex);
+        results.push_back({
+            {"name", host.name},
+            {"ip", host.ip},
+            {"status", "connection successful"},
+            {"response", std::string(buffer, bytesRead)}
+        });
+
+    } else {
+
+        std::lock_guard lock(results_mutex);
+        results.push_back({
+            {"name", host.name},
+            {"ip", host.ip},
+            {"status", "no response"}
+        });
+
+    }
+
+    close(sock);
+
+}
+
+
+void saveResults(const std::string& filename, const json& data) {
 
     std::lock_guard lock(results_mutex);
-
     std::ofstream file(filename, std::ios::trunc);
     if (!file) {
 
@@ -106,26 +194,22 @@ void saveResults(const std::string& filename) {
 
     }
 
-    file << json(results).dump(4);
+    file << data.dump(4);
+
     file.close();
 
 }
 
-void runPingCycle(const std::string &inputFile, const std::string& outputFile, const int sleepIntervalSeconds) {
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(100, 2000);
+void runCycle(const std::string& inputFile, const std::string& outputFile, const int sleepIntervalSeconds, void (*task)(const Host&, json&)) {
 
     while (keepRunning) {
 
         std::vector<Host> hosts = loadHosts(inputFile);
+        json results = json::array();
 
         std::vector<std::thread> threads;
-
         for (const auto& host : hosts) {
-            int randomDelay = dis(gen);
-            threads.emplace_back(processHost, host, randomDelay);
+            threads.emplace_back(task, host, std::ref(results));
         }
 
         std::this_thread::sleep_for(std::chrono::seconds(sleepIntervalSeconds));
@@ -134,12 +218,7 @@ void runPingCycle(const std::string &inputFile, const std::string& outputFile, c
             t.detach();
         }
 
-        saveResults(outputFile);
-
-        {
-            std::lock_guard lock(results_mutex);
-            results.clear();
-        }
+        saveResults(outputFile, results);
 
     }
 
@@ -147,8 +226,10 @@ void runPingCycle(const std::string &inputFile, const std::string& outputFile, c
 
 int main() {
 
-    const std::string inputFile = "/etc/gteam/dynamic/supervisor/config/hosts.json";
-    std::string outputFile = "/etc/gteam/dynamic/supervisor/results/ping_results.json";
+    const std::string inputFile = "/etc/gteam/dynamic/supervisor/server/config/hosts.json";
+
+    std::string pingOutputFile = "/etc/gteam/dynamic/supervisor/server/results/ping_results.json";
+    std::string monitorOutputFile = "/etc/gteam/dynamic/supervisor/server/results/monitor_results.json";
 
     if (loadHosts(inputFile).empty()) {
 
@@ -159,9 +240,11 @@ int main() {
     }
 
     int sleepIntervalSeconds = 2;
-    std::thread pingCycleThread(runPingCycle, inputFile, outputFile, sleepIntervalSeconds);
+    std::thread pingCycleThread(runCycle, inputFile, pingOutputFile, sleepIntervalSeconds, processPing);
+    std::thread monitorCycleThread(runCycle, inputFile, monitorOutputFile, sleepIntervalSeconds, monitorHost);
 
     pingCycleThread.join();
+    monitorCycleThread.join();
 
     return 0;
 

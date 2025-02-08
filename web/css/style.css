@@ -19,30 +19,37 @@ th, td {
 
 }
 
-.latency-low {
+.color-low {
 
     background-color: green;
     color: white;
 
 }
 
-.latency-medium {
+.color-medium {
 
     background-color: orange;
     color: white;
 
 }
 
-.latency-high {
+.color-high {
 
     background-color: red;
     color: white;
 
 }
 
-.latency-loading {
+.color-loading {
 
     background-color: blue;
+    color: white;
+
+}
+
+.color-unknown {
+
+    background-color: gray;
     color: white;
 
 }
