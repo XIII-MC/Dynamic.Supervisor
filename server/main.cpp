@@ -142,6 +142,10 @@ void monitorHost(const Host& host, json& results) {
 
     if (connect(sock, reinterpret_cast<sockaddr*>(&serverAddr), addrLen) < 0) {
 
+        perror("Connect failed");
+
+        std::cerr << "Failed to connect to " << host.ip << " on port " << "6799" << std::endl;
+
         std::lock_guard lock(results_mutex);
         results.push_back({
             {"name", host.name},

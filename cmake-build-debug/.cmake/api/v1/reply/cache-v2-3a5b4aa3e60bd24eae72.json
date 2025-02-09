@@ -1142,42 +1142,6 @@
 			"value" : "FALSE"
 		},
 		{
-			"name" : "Dynamic.Supervisor-SRV_BINARY_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "/home/user/CLionProjects/Dynamic.Supervisor/cmake-build-debug"
-		},
-		{
-			"name" : "Dynamic.Supervisor-SRV_IS_TOP_LEVEL",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "ON"
-		},
-		{
-			"name" : "Dynamic.Supervisor-SRV_SOURCE_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "/home/user/CLionProjects/Dynamic.Supervisor"
-		},
-		{
 			"name" : "Dynamic.Supervisor_BINARY_DIR",
 			"properties" : 
 			[

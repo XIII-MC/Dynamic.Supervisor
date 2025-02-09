@@ -1,6 +1,11 @@
+clientConfigPath="/etc/gteam/dynamic/supervisor/client/config/hosts.json"
+serverConfigPath="/etc/gteam/dynamic/supervisor/server/config/hosts.json"
+
 install_server() {
 
   echo ": Setting up Supervisor-Server as a service..."
+
+  sudo systemctl stop Dynamic.Supervisor-SRV
 
   sudo mkdir -p /etc/gteam/dynamic/supervisor/server/config /etc/gteam/dynamic/supervisor/server/results
 
@@ -20,20 +25,17 @@ install_server() {
           ;;
   esac
 
-  if [ ! -f /etc/gteam/dynamic/supervisor/server/config/hosts.json ]; then
+  if [ ! -f "$serverConfigPath" ]; then
 
-    sudo touch /etc/gteam/dynamic/supervisor/server/config/hosts.json
-
-    sudo bash -c 'cat <<EOF > /etc/gteam/dynamic/supervisor/server/config/hosts.json
+    sudo bash -c "cat > $serverConfigPath << 'EOF'
 [
   {
-    "name": "Local",
-    "ip": "127.0.0.1"
+    \"name\": \"Local\",
+    \"ip\": \"127.0.0.1\"
   }
 ]
-EOF'
-
-    fi
+EOF"
+  fi
 
   sudo touch /etc/gteam/dynamic/supervisor/server/results/ping_results.json
 
@@ -98,6 +100,8 @@ install_client() {
 
   echo ": Setting up Supervisor-Client as a service..."
 
+  sudo systemctl stop Dynamic.Supervisor-CLT
+
   sudo mkdir -p /etc/gteam/dynamic/supervisor/client/config /etc/gteam/dynamic/supervisor/client/results
 
   case "$ARCH" in
@@ -119,17 +123,35 @@ install_client() {
 
   esac
 
-  if [ ! -f /etc/gteam/dynamic/supervisor/client/config/hosts.json ]; then
+  sudo apt install jq -y
 
-      sudo touch /etc/gteam/dynamic/supervisor/client/config/hosts.json
+  if [ -f "$clientConfigPath" ]; then
+
+    read -r -p "Do you want to change the current configuration of the client (ip mode, server ip...) ? [true/false]" remakeConfig
+
+  else
+
+    echo "{}" | sudo tee "$clientConfigPath" > /dev/null
+
+  fi
+
+  allowedIp=$(jq -r '.allowed_ip // empty' "$clientConfigPath")
+
+  if [ -z "$allowedIp" ] || [ "$remakeConfig" = "true" ]; then
 
       read -r -p "What is the Supervisor-Server IP address ? " supervisorServerIP
 
-      sudo bash -c "cat <<EOF > /etc/gteam/dynamic/supervisor/client/config/hosts.json
-{
-  \"allowed_ip\": \"${supervisorServerIP}\"
-}
-EOF"
+      sudo jq --arg allowed_ip "$supervisorServerIP" '. + {allowed_ip: $allowed_ip}' "$clientConfigPath" > tmp.json && sudo mv tmp.json "$clientConfigPath"
+
+  fi
+
+  ipMode=$(jq -r '.ip_mode // empty' "$clientConfigPath")
+
+  if [ -z "$ipMode" ] || [ "$remakeConfig" = "true" ]; then
+
+      read -r -p "What IP mode should the client use (IPv4 or IPv6)? [4/6] " ipModeResult
+
+      sudo jq --arg ip_mode "$ipModeResult" '. + {ip_mode: $ip_mode}' "$clientConfigPath" > tmp.json && sudo mv tmp.json "$clientConfigPath"
 
   fi
 
