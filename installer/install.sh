@@ -127,7 +127,7 @@ install_client() {
 
   if [ -f "$clientConfigPath" ]; then
 
-    read -r -p "Do you want to change the current configuration of the client (ip mode, server ip...) ? [true/false]" remakeConfig
+    read -r -p "Do you want to change the current configuration of the client (server ip...) ? [true/false]" remakeConfig
 
   else
 
@@ -142,16 +142,6 @@ install_client() {
       read -r -p "What is the Supervisor-Server IP address ? " supervisorServerIP
 
       sudo jq --arg allowed_ip "$supervisorServerIP" '. + {allowed_ip: $allowed_ip}' "$clientConfigPath" > tmp.json && sudo mv tmp.json "$clientConfigPath"
-
-  fi
-
-  ipMode=$(jq -r '.ip_mode // empty' "$clientConfigPath")
-
-  if [ -z "$ipMode" ] || [ "$remakeConfig" = "true" ]; then
-
-      read -r -p "What IP mode should the client use (IPv4 or IPv6)? [4/6] " ipModeResult
-
-      sudo jq --arg ip_mode "$ipModeResult" '. + {ip_mode: $ip_mode}' "$clientConfigPath" > tmp.json && sudo mv tmp.json "$clientConfigPath"
 
   fi
 

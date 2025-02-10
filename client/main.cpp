@@ -75,7 +75,7 @@ void handleClient(const int clientSocket, const std::string& allowedIP, const st
     socklen_t addrLen = sizeof(clientAddr);
     getpeername(clientSocket, reinterpret_cast<sockaddr*>(&clientAddr), &addrLen);
 
-    std::cout << "Connection from: " << clientIP << std::endl;
+    std::cout << "Client connected: " << inet_ntoa(clientAddr.sin_addr) << std::endl;
 
     if (clientIP != allowedIP) {
 
@@ -111,25 +111,16 @@ void handleClient(const int clientSocket, const std::string& allowedIP, const st
 void runServer() {
 
     const std::string allowedIp = getConfigValue("allowed_ip");
-    const std::string ipMode = getConfigValue("ip_mode");
 
-    if (ipMode.empty()) {
-
-        std::cerr << "Failed to retrieve ip_mode from config. Exiting..." << std::endl;
-
-        return;
-
-    }
-
-    int serverSocket = -1;
-    if (ipMode == "4") {
+    int serverSocket;
+    if (allowedIp.contains(".")) {
 
         serverSocket = socket(AF_INET, SOCK_STREAM, 0);
         if (serverSocket < 0) {
 
             std::cerr << "Failed to create IPv4 socket" << std::endl;
 
-            return;
+            exit(-1);
 
         }
 
@@ -144,20 +135,20 @@ void runServer() {
 
             close(serverSocket);
 
-            return;
+            exit(-1);
 
         }
 
         std::cout << "Server listening on IPv4, port " << PORT << std::endl;
 
-    } else if (ipMode == "6") {
+    } else if (allowedIp.contains(":")) {
 
         serverSocket = socket(AF_INET6, SOCK_STREAM, 0);
         if (serverSocket < 0) {
 
             std::cerr << "Failed to create IPv6 socket" << std::endl;
 
-            return;
+            exit(-1);
 
         }
 
@@ -172,7 +163,7 @@ void runServer() {
 
             close(serverSocket);
 
-            return;
+            exit(-1);
 
         }
 
@@ -180,9 +171,9 @@ void runServer() {
 
     } else {
 
-        std::cerr << "Invalid ip_mode value in config. Use '4' for IPv4 or '6' for IPv6." << std::endl;
+        std::cerr << "Invalid Supervisor-Server IP in config." << std::endl;
 
-        return;
+        exit(-1);
 
     }
 
@@ -192,7 +183,7 @@ void runServer() {
 
         close(serverSocket);
 
-        return;
+        exit(-1);
 
     }
 
@@ -204,21 +195,37 @@ void runServer() {
         if (int clientSocket = accept(serverSocket, reinterpret_cast<sockaddr*>(&clientAddr), &addrLen); clientSocket >= 0) {
 
             char clientIP[INET6_ADDRSTRLEN] = {};
+
             if (clientAddr.ss_family == AF_INET) {
 
                 const auto* addr = reinterpret_cast<sockaddr_in*>(&clientAddr);
-                inet_ntop(AF_INET, &addr->sin_addr, clientIP, INET_ADDRSTRLEN);
+                if (inet_ntop(AF_INET, &addr->sin_addr, clientIP, INET_ADDRSTRLEN) == nullptr) {
+
+                    std::cerr << "Failed to convert IPv4 address" << std::endl;
+
+                    close(clientSocket);
+
+                    return;
+
+                }
 
             } else if (clientAddr.ss_family == AF_INET6) {
 
                 const auto* addr6 = reinterpret_cast<sockaddr_in6*>(&clientAddr);
-                inet_ntop(AF_INET6, &addr6->sin6_addr, clientIP, INET6_ADDRSTRLEN);
+                if (inet_ntop(AF_INET6, &addr6->sin6_addr, clientIP, INET6_ADDRSTRLEN) == nullptr) {
+
+                    std::cerr << "Failed to convert IPv6 address" << std::endl;
+
+                    close(clientSocket);
+
+                    return;
+
+                }
 
             }
 
-            std::cout << "Connection from: " << clientIP << std::endl;
-
-            std::thread(handleClient, clientSocket, allowedIp, ipMode).detach();
+            std::string clientIpStr(clientIP);
+            std::thread(handleClient, clientSocket, allowedIp, clientIpStr).detach();
 
         } else {
 
