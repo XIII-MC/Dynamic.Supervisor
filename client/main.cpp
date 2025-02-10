@@ -13,18 +13,20 @@
 
 #define PORT 6799
 #define BUFFER_SIZE 4096
+#define CONFIG_PATH "/etc/gteam/dynamic/supervisor/client/config/hosts.json"
+#define RESULTS_PATH "/etc/gteam/dynamic/supervisor/client/results/monitor_results.json"
 
 using json = nlohmann::json;
 
 std::atomic keepRunning(true);
 std::mutex file_mutex;
 
-std::string readFileContent(const std::string& filePath) {
+std::string getResults() {
 
-    std::ifstream file(filePath);
+    std::ifstream file(RESULTS_PATH);
     if (!file) {
 
-        std::cerr << "Error: Could not open " << filePath << std::endl;
+        std::cerr << "Error: Could not open " << RESULTS_PATH << std::endl;
 
         return "";
 
@@ -34,20 +36,36 @@ std::string readFileContent(const std::string& filePath) {
 
 }
 
-std::string getAllowedIP(const std::string& configPath) {
+std::string getConfigValue(const std::string& key) {
 
-    std::ifstream file(configPath);
-    if (!file) {
+    std::ifstream configFile(CONFIG_PATH);
+    if (!configFile) {
 
-        std::cerr << "Error: Could not open " << configPath << std::endl;
+        std::cerr << "Error: Could not open config file: " << CONFIG_PATH << std::endl;
 
         return "";
 
     }
 
-    json configJson;
-    file >> configJson;
-    return configJson["allowed_ip"].get<std::string>();
+    try {
+
+        json configJson;
+        configFile >> configJson;
+        if (configJson.contains(key)) {
+
+            return configJson[key].get<std::string>();
+
+        }
+
+        std::cerr << "Error: Key '" << key << "' not found in config file" << std::endl;
+
+    } catch (const std::exception& e) {
+
+        std::cerr << "Error: Failed to parse config file: " << e.what() << std::endl;
+
+    }
+
+    return "";
 
 }
 
@@ -57,7 +75,7 @@ void handleClient(const int clientSocket, const std::string& allowedIP, const st
     socklen_t addrLen = sizeof(clientAddr);
     getpeername(clientSocket, reinterpret_cast<sockaddr*>(&clientAddr), &addrLen);
 
-    std::cout << "Connection from: " << clientIP << std::endl;
+    std::cout << "Client connected: " << inet_ntoa(clientAddr.sin_addr) << std::endl;
 
     if (clientIP != allowedIP) {
 
@@ -73,7 +91,7 @@ void handleClient(const int clientSocket, const std::string& allowedIP, const st
 
     }
 
-    const std::string statsContent = readFileContent("/etc/gteam/dynamic/supervisor/client/results/monitor_results.json");
+    const std::string statsContent = getResults();
     if (statsContent.empty()) {
 
         const auto errorMessage = "500 Internal Server Error: Could not read stats file\n";
@@ -90,40 +108,72 @@ void handleClient(const int clientSocket, const std::string& allowedIP, const st
 
 }
 
-void runServer(const std::string& configPath) {
+void runServer() {
 
-    const int serverSocket = socket(AF_INET6, SOCK_STREAM, 0);
-    if (serverSocket == -1) {
+    const std::string allowedIp = getConfigValue("allowed_ip");
 
-        std::cerr << "Failed to create socket" << std::endl;
+    int serverSocket;
+    if (allowedIp.contains(".")) {
 
-        return;
+        serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+        if (serverSocket < 0) {
 
-    }
+            std::cerr << "Failed to create IPv4 socket" << std::endl;
 
-    constexpr int option = 0;
-    if (setsockopt(serverSocket, IPPROTO_IPV6, IPV6_V6ONLY, &option, sizeof(option)) < 0) {
+            exit(-1);
 
-        std::cerr << "Failed to set IPV6_V6ONLY option" << std::endl;
+        }
 
-        close(serverSocket);
+        sockaddr_in serverAddr{};
+        serverAddr.sin_family = AF_INET;
+        serverAddr.sin_addr.s_addr = INADDR_ANY;
+        serverAddr.sin_port = htons(PORT);
 
-        return;
+        if (bind(serverSocket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) < 0) {
 
-    }
+            std::cerr << "Failed to bind IPv4 socket on port " << PORT << std::endl;
 
-    sockaddr_in6 serverAddr{};
-    serverAddr.sin6_family = AF_INET6;
-    serverAddr.sin6_addr = in6addr_any;
-    serverAddr.sin6_port = htons(PORT);
+            close(serverSocket);
 
-    if (bind(serverSocket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) < 0) {
+            exit(-1);
 
-        std::cerr << "Failed to bind socket" << std::endl;
+        }
 
-        close(serverSocket);
+        std::cout << "Server listening on IPv4, port " << PORT << std::endl;
 
-        return;
+    } else if (allowedIp.contains(":")) {
+
+        serverSocket = socket(AF_INET6, SOCK_STREAM, 0);
+        if (serverSocket < 0) {
+
+            std::cerr << "Failed to create IPv6 socket" << std::endl;
+
+            exit(-1);
+
+        }
+
+        sockaddr_in6 serverAddr{};
+        serverAddr.sin6_family = AF_INET6;
+        serverAddr.sin6_addr = in6addr_any;
+        serverAddr.sin6_port = htons(PORT);
+
+        if (bind(serverSocket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) < 0) {
+
+            std::cerr << "Failed to bind IPv6 socket on port " << PORT << std::endl;
+
+            close(serverSocket);
+
+            exit(-1);
+
+        }
+
+        std::cout << "Server listening on IPv6, port " << PORT << std::endl;
+
+    } else {
+
+        std::cerr << "Invalid Supervisor-Server IP in config." << std::endl;
+
+        exit(-1);
 
     }
 
@@ -133,18 +183,7 @@ void runServer(const std::string& configPath) {
 
         close(serverSocket);
 
-        return;
-
-    }
-
-    std::cout << "Server listening on port " << PORT << " (IPv4 and IPv6)" << std::endl;
-
-    std::string allowedIP = getAllowedIP(configPath);
-    if (allowedIP.empty()) {
-
-        std::cerr << "Failed to retrieve allowed IP from hosts.json" << std::endl;
-
-        return;
+        exit(-1);
 
     }
 
@@ -152,34 +191,43 @@ void runServer(const std::string& configPath) {
 
         sockaddr_storage clientAddr{};
         socklen_t addrLen = sizeof(clientAddr);
-        int clientSocket = accept(serverSocket, reinterpret_cast<sockaddr*>(&clientAddr), &addrLen);
 
-        if (clientSocket >= 0) {
+        if (int clientSocket = accept(serverSocket, reinterpret_cast<sockaddr*>(&clientAddr), &addrLen); clientSocket >= 0) {
 
             char clientIP[INET6_ADDRSTRLEN] = {};
 
             if (clientAddr.ss_family == AF_INET) {
 
                 const auto* addr = reinterpret_cast<sockaddr_in*>(&clientAddr);
+                if (inet_ntop(AF_INET, &addr->sin_addr, clientIP, INET_ADDRSTRLEN) == nullptr) {
 
-                inet_ntop(AF_INET, &addr->sin_addr, clientIP, INET_ADDRSTRLEN);
+                    std::cerr << "Failed to convert IPv4 address" << std::endl;
+
+                    close(clientSocket);
+
+                    return;
+
+                }
 
             } else if (clientAddr.ss_family == AF_INET6) {
 
                 const auto* addr6 = reinterpret_cast<sockaddr_in6*>(&clientAddr);
+                if (inet_ntop(AF_INET6, &addr6->sin6_addr, clientIP, INET6_ADDRSTRLEN) == nullptr) {
 
-                inet_ntop(AF_INET6, &addr6->sin6_addr, clientIP, INET6_ADDRSTRLEN);
+                    std::cerr << "Failed to convert IPv6 address" << std::endl;
+
+                    close(clientSocket);
+
+                    return;
+
+                }
 
             }
 
-            std::cout << "Connection from: " << clientIP << std::endl;
+            std::string clientIpStr(clientIP);
+            std::thread(handleClient, clientSocket, allowedIp, clientIpStr).detach();
 
-            std::thread(handleClient, clientSocket, allowedIP, clientIP).detach();
-
-
-        }
-
-        if (clientSocket < 0) {
+        } else {
 
             std::cerr << "Failed to accept connection" << std::endl;
 
@@ -187,10 +235,10 @@ void runServer(const std::string& configPath) {
 
     }
 
+
     close(serverSocket);
 
 }
-
 
 double getCpuUsage() {
 
@@ -228,7 +276,7 @@ double getCpuUsage() {
 
 }
 
-void monitorCpuUsage(const std::string& resultsFile) {
+void monitorCpuUsage() {
 
     while (keepRunning) {
 
@@ -240,13 +288,13 @@ void monitorCpuUsage(const std::string& resultsFile) {
         };
 
         std::lock_guard lock(file_mutex);
-        if (std::ofstream file(resultsFile, std::ios::trunc); file) {
+        if (std::ofstream file(RESULTS_PATH, std::ios::trunc); file) {
 
             file << cpuStats.dump(4);
 
         } else {
 
-            std::cerr << "Error: Could not write to " << resultsFile << std::endl;
+            std::cerr << "Error: Could not write to " << RESULTS_PATH << std::endl;
         }
 
 
@@ -258,11 +306,8 @@ void monitorCpuUsage(const std::string& resultsFile) {
 
 int main() {
 
-    const std::string configPath = "/etc/gteam/dynamic/supervisor/client/config/hosts.json";
-    const std::string resultsFile = "/etc/gteam/dynamic/supervisor/client/results/monitor_results.json";
-
-    std::thread serverThread(runServer, configPath);
-    std::thread cpuMonitoringThread(monitorCpuUsage, resultsFile);
+    std::thread serverThread(runServer);
+    std::thread cpuMonitoringThread(monitorCpuUsage);
 
     serverThread.join();
     cpuMonitoringThread.join();

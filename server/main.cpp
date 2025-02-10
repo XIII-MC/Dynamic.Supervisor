@@ -12,6 +12,8 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
+#define PORT 6799
+
 using json = nlohmann::json;
 
 struct Host {
@@ -84,7 +86,34 @@ void processPing(const Host& host, json& results) {
 
 void monitorHost(const Host& host, json& results) {
 
-    const int sock = socket(AF_INET6, SOCK_STREAM, 0);
+    sockaddr_storage serverAddr{};
+    socklen_t addr_len;
+    int sock;
+
+    if (inet_pton(AF_INET, host.ip.c_str(), &(reinterpret_cast<sockaddr_in*>(&serverAddr)->sin_addr)) == 1) {
+
+        sock = socket(AF_INET, SOCK_STREAM, 0);
+
+        addr_len = sizeof(sockaddr_in);
+        reinterpret_cast<sockaddr_in*>(&serverAddr)->sin_family = AF_INET;
+        reinterpret_cast<sockaddr_in*>(&serverAddr)->sin_port = htons(PORT);
+
+    } else if (inet_pton(AF_INET6, host.ip.c_str(), &(reinterpret_cast<sockaddr_in6*>(&serverAddr)->sin6_addr)) == 1) {
+
+        sock = socket(AF_INET6, SOCK_STREAM, 0);
+
+        addr_len = sizeof(sockaddr_in6);
+        reinterpret_cast<sockaddr_in6*>(&serverAddr)->sin6_family = AF_INET6;
+        reinterpret_cast<sockaddr_in6*>(&serverAddr)->sin6_port = htons(PORT);
+
+    } else {
+
+        std::cerr << "Invalid IP address format for " << host.name << std::endl;
+
+        return;
+
+    }
+
     if (sock < 0) {
 
         std::cerr << "Error: Could not create socket for " << host.name << std::endl;
@@ -99,48 +128,23 @@ void monitorHost(const Host& host, json& results) {
     setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
     setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 
-    sockaddr_storage serverAddr{};
-    socklen_t addrLen = 0;
+    if (const int result = connect(sock, reinterpret_cast<sockaddr*>(&serverAddr), addr_len); result < 0 && errno != EINPROGRESS) {
 
-    if (host.ip.find(':') != std::string::npos) {
+        std::cerr << "Connection failed immediately for " << host.ip << std::endl;
 
-        auto* addr6 = reinterpret_cast<sockaddr_in6*>(&serverAddr);
-        addr6->sin6_family = AF_INET6;
-        addr6->sin6_port = htons(6799);
+        close(sock);
 
-        if (inet_pton(AF_INET6, host.ip.c_str(), &addr6->sin6_addr) <= 0) {
-
-            std::cerr << "Invalid IPv6 address for " << host.name << std::endl;
-
-            close(sock);
-
-            return;
-
-        }
-
-        addrLen = sizeof(sockaddr_in6);
-
-    } else {
-
-        auto* addr4 = reinterpret_cast<sockaddr_in*>(&serverAddr);
-        addr4->sin_family = AF_INET;
-        addr4->sin_port = htons(6799);
-
-        if (inet_pton(AF_INET, host.ip.c_str(), &addr4->sin_addr) <= 0) {
-
-            std::cerr << "Invalid IPv4 address for " << host.name << std::endl;
-
-            close(sock);
-
-            return;
-
-        }
-
-        addrLen = sizeof(sockaddr_in);
+        return;
 
     }
 
-    if (connect(sock, reinterpret_cast<sockaddr*>(&serverAddr), addrLen) < 0) {
+    fd_set write_fds;
+    FD_ZERO(&write_fds);
+    FD_SET(sock, &write_fds);
+
+    if (const int select_result = select(sock + 1, nullptr, &write_fds, nullptr, &timeout); select_result <= 0) {
+
+        std::cerr << "Connection timed out or failed for " << host.ip << std::endl;
 
         std::lock_guard lock(results_mutex);
         results.push_back({
@@ -156,7 +160,7 @@ void monitorHost(const Host& host, json& results) {
     }
 
     char buffer[1024] = {};
-    if (const int bytesRead = read(sock, buffer, sizeof(buffer) - 1); bytesRead > 0) {
+    if (const long bytesRead = read(sock, buffer, sizeof(buffer) - 1); bytesRead > 0) {
 
         std::lock_guard lock(results_mutex);
         results.push_back({
@@ -180,7 +184,6 @@ void monitorHost(const Host& host, json& results) {
     close(sock);
 
 }
-
 
 void saveResults(const std::string& filename, const json& data) {
 
@@ -234,8 +237,6 @@ int main() {
     if (loadHosts(inputFile).empty()) {
 
         std::cerr << "No hosts found in JSON file.\n";
-
-        return 1;
 
     }
 
