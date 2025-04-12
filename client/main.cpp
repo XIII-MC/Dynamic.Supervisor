@@ -283,7 +283,7 @@ void monitorCpuUsage() {
         double cpuUsage = getCpuUsage();
 
         json cpuStats = {
-            {"timestamp", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())},
+            {"timestamp", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())œ},
             {"cpu_usage_percent", cpuUsage}
         };
 
