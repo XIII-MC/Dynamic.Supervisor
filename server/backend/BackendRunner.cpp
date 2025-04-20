@@ -1,25 +1,30 @@
-#include "crow_all.h"
+#include "BackendRunner.h"
+#include "../utils/json/JSONManager.h"
 
-int main() {
+#include <crow.h>
+#include <fstream>
+
+const std::string HOSTS_PATH = "/var/lib/dynamic-supervisor/srv/hosts.json";
+
+void BackendRunner::start_crow() {
+
     crow::SimpleApp app;
 
-    // POST /add-host
-    CROW_ROUTE(app, "/add-host").methods("POST"_method)([](const crow::request& req){
-        auto body = req.body.c_str(); // JSON string sent from frontend
+    CROW_ROUTE(app, "/api/v1/hosts/add").methods(crow::HTTPMethod::Post)
+    ([&](const crow::request& req) {
 
-        JSONManager manager;
-        manager.append_data_to_file("hosts.json", body);
+        const std::string& body = req.body;
+        if (body.empty()) {
+            return crow::response(400, "Missing JSON body");
+        }
 
-        return crow::response(200, "Host added!");
+        // Append host
+        JSONManager::append_data_to_file(HOSTS_PATH.c_str(), body.c_str());
+
+        return crow::response(200, "Host added");
+
     });
 
-    // Serve frontend
-    CROW_ROUTE(app, "/")([](){
-        std::ifstream file("index.html");
-        std::stringstream buffer;
-        buffer << file.rdbuf();
-        return buffer.str();
-    });
+    app.bindaddr("127.0.0.1").port(18080).multithreaded().run_async();
 
-    app.port(18080).multithreaded().run();
 }
