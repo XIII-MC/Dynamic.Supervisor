@@ -8,9 +8,9 @@ sudo apt install build-essential
 sudo apt install rapidjson-dev
 
 # Needed for Cown (backend)
-sudo apt install libasio-dev
+sudo apt install libboost-all-dev libssl-dev
 
-# Download Cown and install it
-# !! MAKE SURE TO USE LATEST !!
-wget -O crow.deb https://github.com/CrowCpp/Crow/releases/download/v1.2.1.2/Crow-1.2.1-Linux.deb
-sudo dpkg -i crow.deb
+# Install Crow
+mkdir -p include
+git submodule add -f https://github.com/CrowCpp/Crow.git include/Crow
+git submodule update --init --recursive
