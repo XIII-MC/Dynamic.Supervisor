@@ -1,1 +1,1 @@
-[{"display_name":"Localhost","hostname":"127.0.0.1"},{"display_name":"Server 1","hostname":"10.0.0.1"},{"display_name":"Server 2","hostname":"10.0.0.2"}]
+[{"display_name":"Localhost","hostname":"127.0.0.1"},{"display_name":"Server 1","hostname":"10.0.0.1"},{"display_name":"Server 2","hostname":"10.0.0.2"},{"display_name":"API Host","hostname":"192.168.0.99"}]

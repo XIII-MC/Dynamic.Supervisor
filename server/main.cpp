@@ -1,4 +1,5 @@
 #include "utils/json/JSONManager.h"
+#include "backend/BackendRunner.h"
 
 #include <fstream>
 #include <iostream>
@@ -6,7 +7,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/filereadstream.h>
 
-const std::string HOSTS_PATH = "/home/user/CLion/Dynamic.Supervisor/server/hosts.json";
+const std::string HOSTS_PATH = "/var/lib/dynamic-supervisor/srv/hosts.json";
 
 int main()
 {
@@ -17,12 +18,12 @@ int main()
     // Read and extract part:
 
     // Open file and check if it exists, if not, generate a "generic" one
-    FILE* file = fopen(HOSTS_PATH.c_str(), "r");
+    FILE* file = nullptr;
     int try_count = 0;
-    while (!file && try_count++ <= 1)
+    while ((file = fopen(HOSTS_PATH.c_str(), "r")) == nullptr && try_count++ <= 1)
     {
 
-        std::cerr << "[ERR] Could not find specified file!"
+        std::cerr << "[ERR] Could not find specified file! "
         << (try_count <= 1 ? "Generating a generic one... " : "Exiting...")
         << std::endl;
 
@@ -64,13 +65,6 @@ int main()
 
     }
 
-    const char* newHosts = R"([
-    { "display_name": "Server 1", "hostname": "10.0.0.1" },
-    { "display_name": "Server 2", "hostname": "10.0.0.2" }
-])";
-
-    JSONManager::append_data_to_file(HOSTS_PATH.c_str(), newHosts);
-
     // Go through all the hosts' data
     for (const auto& item : d.GetArray())
     {
@@ -80,6 +74,8 @@ int main()
         std::cout << "Hostname: " << item["hostname"].GetString() << std::endl;
 
     }
+
+    BackendRunner::start_crow();
 
     // Since we're supposed to run forever this is not supposed to ever trigger
     return -100;
