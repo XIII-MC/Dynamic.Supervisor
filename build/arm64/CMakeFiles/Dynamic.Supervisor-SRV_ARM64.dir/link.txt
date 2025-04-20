@@ -1,1 +1,0 @@
-aarch64-linux-gnu-g++ -O3 -DNDEBUG "CMakeFiles/Dynamic.Supervisor-SRV_ARM64.dir/server/main.cpp.o" -o Dynamic.Supervisor-SRV_ARM64 

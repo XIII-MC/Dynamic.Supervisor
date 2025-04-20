@@ -1,4 +1,0 @@
-/home/user/CLionProjects/Dynamic.Supervisor/build/arm32/CMakeFiles/Dynamic.Supervisor-SRV_ARM32.dir
-/home/user/CLionProjects/Dynamic.Supervisor/build/arm32/CMakeFiles/Dynamic.Supervisor-CLT_ARM32.dir
-/home/user/CLionProjects/Dynamic.Supervisor/build/arm32/CMakeFiles/edit_cache.dir
-/home/user/CLionProjects/Dynamic.Supervisor/build/arm32/CMakeFiles/rebuild_cache.dir

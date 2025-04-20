@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG "CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir/server/main.cpp.o" -o Dynamic.Supervisor-SRV_x86_64 

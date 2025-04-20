@@ -1,4 +1,0 @@
-/home/user/CLionProjects/Dynamic.Supervisor/cmake-build-debug/CMakeFiles/Dynamic.Supervisor-SRV_x86_64.dir
-/home/user/CLionProjects/Dynamic.Supervisor/cmake-build-debug/CMakeFiles/Dynamic.Supervisor-CLT_x86_64.dir
-/home/user/CLionProjects/Dynamic.Supervisor/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/user/CLionProjects/Dynamic.Supervisor/cmake-build-debug/CMakeFiles/rebuild_cache.dir
