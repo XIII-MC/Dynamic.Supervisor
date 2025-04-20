@@ -1,0 +1,3 @@
+[submodule "include/Crow"]
+	path = include/Crow
+	url = https://github.com/CrowCpp/Crow.git

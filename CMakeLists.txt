@@ -20,13 +20,25 @@ else()
     message(FATAL_ERROR "Unsupported architecture: ${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
+include_directories(${CMAKE_SOURCE_DIR}/include/Crow/include)
+
 # Server executable
 add_executable(${SRV_TARGET_NAME} server/main.cpp
         server/utils/json/JSONManager.cpp
         server/utils/json/JSONManager.h
         server/backend/BackendRunner.cpp
+        server/backend/BackendRunner.h
 )
 set_target_properties(${SRV_TARGET_NAME} PROPERTIES OUTPUT_NAME ${SRV_TARGET_NAME})
+
+find_package(Boost REQUIRED)
+find_package(OpenSSL REQUIRED)
+
+target_link_libraries(${SRV_TARGET_NAME}
+        Boost::boost
+        OpenSSL::SSL
+        OpenSSL::Crypto
+)
 
 # Client executable
 add_executable(${CLT_TARGET_NAME} client/main.cpp)
